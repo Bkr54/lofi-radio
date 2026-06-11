@@ -1,5 +1,9 @@
 # 🎵 lofi-radio
 
+[![CI](https://github.com/Bkr54/lofi-radio/actions/workflows/ci.yml/badge.svg)](https://github.com/Bkr54/lofi-radio/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Node](https://img.shields.io/badge/node-%E2%89%A518-brightgreen)
+
 A self-hosted **24/7 music radio** that livestreams to **YouTube** (or any RTMP
 target) from your own VPS — with a clean web dashboard, a live **"Now Playing"**
 overlay, **hot-swappable** playlists/backgrounds, a **TV-grid scheduler** for
