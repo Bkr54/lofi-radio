@@ -48,7 +48,7 @@ sudo apt update && sudo apt install -y ffmpeg
 ### Option A — guided installer
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/lofi-radio.git
+git clone https://github.com/Bkr54/lofi-radio.git
 cd lofi-radio
 sudo bash deploy/install.sh
 ```
@@ -60,7 +60,7 @@ hash), and installs the systemd service. Then add media and start it.
 ### Option B — manual
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/lofi-radio.git
+git clone https://github.com/Bkr54/lofi-radio.git
 cd lofi-radio
 npm install --omit=dev
 

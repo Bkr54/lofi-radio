@@ -26,7 +26,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/lofi-radio.git"
+    "url": "https://github.com/Bkr54/lofi-radio.git"
   },
   "dependencies": {
     "express": "^4.18.2",

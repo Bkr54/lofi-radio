@@ -15,7 +15,7 @@ welcome — bug reports, docs, features, and engine improvements.
 ## Dev setup
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/lofi-radio.git
+git clone https://github.com/Bkr54/lofi-radio.git
 cd lofi-radio
 npm install
 
