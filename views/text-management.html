@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lofi Radio - Gestion des Textes</title>
+    <title>Lofi Radio - Text Management</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
@@ -425,9 +425,9 @@
             <h1 class="logo">LOFI RADIO</h1>
             <nav class="nav">
                 <a href="/dashboard" class="nav-btn">Dashboard</a>
-                <a href="/schedule" class="nav-btn">Grille TV</a>
-                <a href="/text-management" class="nav-btn active">Textes</a>
-                <a href="/logout" class="nav-btn">Deconnexion</a>
+                <a href="/schedule" class="nav-btn">Schedule</a>
+                <a href="/text-management" class="nav-btn active">Texts</a>
+                <a href="/logout" class="nav-btn">Log Out</a>
             </nav>
         </div>
     </header>
@@ -438,7 +438,7 @@
         <div class="grid">
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Aperçu Overlay</h2>
+                    <h2 class="card-title">Overlay Preview</h2>
                 </div>
                 <div class="card-body">
                     <div class="preview-container">
@@ -454,7 +454,7 @@
                     </div>
                     
                     <div class="info-box">
-                        <strong>ℹ Info:</strong> Cet aperçu montre approximativement le rendu final. Les positions sont relatives à une résolution de 1920x1080.
+                        <strong>ℹ Info:</strong> This preview shows an approximate representation of the final render. Positions are relative to a 1920x1080 resolution.
                     </div>
                 </div>
             </div>
@@ -465,12 +465,12 @@
                 </div>
                 <div class="card-body">
                     <div class="preset-positions">
-                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'bottomLeft')">Bas Gauche</button>
-                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'bottomCenter')">Bas Centre</button>
-                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'bottomRight')">Bas Droite</button>
-                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'topLeft')">Haut Gauche</button>
-                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'topCenter')">Haut Centre</button>
-                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'topRight')">Haut Droite</button>
+                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'bottomLeft')">Bottom Left</button>
+                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'bottomCenter')">Bottom Center</button>
+                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'bottomRight')">Bottom Right</button>
+                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'topLeft')">Top Left</button>
+                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'topCenter')">Top Center</button>
+                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'topRight')">Top Right</button>
                     </div>
 
                     <div class="position-grid">
@@ -483,11 +483,11 @@
                             <input type="number" id="nowPlayingY" value="980" min="0" max="1080">
                         </div>
                         <div class="form-group">
-                            <label for="nowPlayingFontSize">Taille police (px)</label>
+                            <label for="nowPlayingFontSize">Font size (px)</label>
                             <input type="number" id="nowPlayingFontSize" value="48" min="12" max="120">
                         </div>
                         <div class="form-group">
-                            <label for="nowPlayingColor">Couleur</label>
+                            <label for="nowPlayingColor">Color</label>
                             <input type="color" id="nowPlayingColor" value="#ffffff">
                         </div>
                     </div>
@@ -500,12 +500,12 @@
                 </div>
                 <div class="card-body">
                     <div class="preset-positions">
-                        <button class="preset-btn" onclick="setPreset('message', 'bottomLeft')">Bas Gauche</button>
-                        <button class="preset-btn" onclick="setPreset('message', 'bottomCenter')">Bas Centre</button>
-                        <button class="preset-btn" onclick="setPreset('message', 'bottomRight')">Bas Droite</button>
-                        <button class="preset-btn" onclick="setPreset('message', 'topLeft')">Haut Gauche</button>
-                        <button class="preset-btn" onclick="setPreset('message', 'topCenter')">Haut Centre</button>
-                        <button class="preset-btn" onclick="setPreset('message', 'topRight')">Haut Droite</button>
+                        <button class="preset-btn" onclick="setPreset('message', 'bottomLeft')">Bottom Left</button>
+                        <button class="preset-btn" onclick="setPreset('message', 'bottomCenter')">Bottom Center</button>
+                        <button class="preset-btn" onclick="setPreset('message', 'bottomRight')">Bottom Right</button>
+                        <button class="preset-btn" onclick="setPreset('message', 'topLeft')">Top Left</button>
+                        <button class="preset-btn" onclick="setPreset('message', 'topCenter')">Top Center</button>
+                        <button class="preset-btn" onclick="setPreset('message', 'topRight')">Top Right</button>
                     </div>
 
                     <div class="position-grid">
@@ -518,11 +518,11 @@
                             <input type="number" id="messageY" value="50" min="0" max="1080">
                         </div>
                         <div class="form-group">
-                            <label for="messageFontSize">Taille police (px)</label>
+                            <label for="messageFontSize">Font size (px)</label>
                             <input type="number" id="messageFontSize" value="36" min="12" max="120">
                         </div>
                         <div class="form-group">
-                            <label for="messageColor">Couleur</label>
+                            <label for="messageColor">Color</label>
                             <input type="color" id="messageColor" value="#ffffff">
                         </div>
                     </div>
@@ -531,49 +531,49 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Messages Dynamiques</h2>
+                    <h2 class="card-title">Dynamic Messages</h2>
                 </div>
                 <div class="card-body">
                     <div class="info-box">
-                        <strong>ℹ Info:</strong> Ces messages defileront automatiquement toutes les 30 secondes. Pas d'emojis supportes.
+                        <strong>ℹ Info:</strong> These messages will scroll automatically every 30 seconds. Emojis are not supported.
                     </div>
 
                     <div class="messages-list" id="messagesList">
                         <div class="message-item">
-                            <input type="text" class="message-input" value="Radio Lofi 24/7" placeholder="Entrez un message...">
+                            <input type="text" class="message-input" value="Radio Lofi 24/7" placeholder="Enter a message...">
                             <button class="btn btn-danger" onclick="removeMessage(this)">✕</button>
                         </div>
                         <div class="message-item">
-                            <input type="text" class="message-input" value="Relax & Study" placeholder="Entrez un message...">
+                            <input type="text" class="message-input" value="Relax & Study" placeholder="Enter a message...">
                             <button class="btn btn-danger" onclick="removeMessage(this)">✕</button>
                         </div>
                         <div class="message-item">
-                            <input type="text" class="message-input" value="Chill Vibes Only" placeholder="Entrez un message...">
+                            <input type="text" class="message-input" value="Chill Vibes Only" placeholder="Enter a message...">
                             <button class="btn btn-danger" onclick="removeMessage(this)">✕</button>
                         </div>
                     </div>
 
                     <button class="btn btn-secondary" onclick="addMessage()" style="width: 100%; margin-bottom: 1rem;">
-                        + Ajouter un message
+                        + Add a message
                     </button>
 
                     <button class="btn btn-primary" onclick="saveMessages()" style="width: 100%;">
-                        Sauvegarder les messages
+                        Save messages
                     </button>
                 </div>
             </div>
 
             <div class="card" style="grid-column: 1 / -1;">
                 <div class="card-header">
-                    <h2 class="card-title">Appliquer les changements</h2>
+                    <h2 class="card-title">Apply Changes</h2>
                 </div>
                 <div class="card-body">
                     <div class="info-box">
-                        <strong>⚠ Important:</strong> Les changements seront appliques immediatement au stream en cours. Le flux ne sera pas interrompu.
+                        <strong>⚠ Important:</strong> Changes will be applied immediately to the live stream. The stream will not be interrupted.
                     </div>
 
                     <button class="btn btn-primary" onclick="applyOverlayChanges()" style="width: 100%;">
-                        Appliquer les positions et styles
+                        Apply positions and styles
                     </button>
                 </div>
             </div>
@@ -636,7 +636,7 @@
             const item = document.createElement('div');
             item.className = 'message-item';
             item.innerHTML = `
-                <input type="text" class="message-input" placeholder="Entrez un message...">
+                <input type="text" class="message-input" placeholder="Enter a message...">
                 <button class="btn btn-danger" onclick="removeMessage(this)">✕</button>
             `;
             list.appendChild(item);
@@ -647,7 +647,7 @@
             if (items.length > 1) {
                 btn.parentElement.remove();
             } else {
-                showAlert('Il doit rester au moins un message', 'error');
+                showAlert('There must be at least one message', 'error');
             }
         }
 
@@ -656,7 +656,7 @@
             const messages = Array.from(inputs).map(input => input.value).filter(v => v.trim() !== '');
             
             if (messages.length === 0) {
-                showAlert('Veuillez entrer au moins un message', 'error');
+                showAlert('Please enter at least one message', 'error');
                 return;
             }
 
@@ -670,12 +670,12 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showAlert('Messages sauvegardes avec succes', 'success');
+                    showAlert('Messages saved successfully', 'success');
                 } else {
                     showAlert(data.error, 'error');
                 }
             } catch (err) {
-                showAlert('Erreur lors de la sauvegarde', 'error');
+                showAlert('Error saving messages', 'error');
             }
         }
 
@@ -707,12 +707,12 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showAlert('Overlay applique avec succes', 'success');
+                    showAlert('Overlay applied successfully', 'success');
                 } else {
                     showAlert(data.error, 'error');
                 }
             } catch (err) {
-                showAlert('Erreur lors de l\'application', 'error');
+                showAlert('Error applying overlay', 'error');
             }
         }
 
@@ -766,7 +766,7 @@
                         const item = document.createElement('div');
                         item.className = 'message-item';
                         item.innerHTML = `
-                            <input type="text" class="message-input" value="${msg}" placeholder="Entrez un message...">
+                            <input type="text" class="message-input" value="${msg}" placeholder="Enter a message...">
                             <button class="btn btn-danger" onclick="removeMessage(this)">✕</button>
                         `;
                         list.appendChild(item);
@@ -775,7 +775,7 @@
                 
                 updatePreview();
             } catch (err) {
-                console.error('Erreur chargement parametres:', err);
+                console.error('Error loading settings:', err);
             }
         }
 

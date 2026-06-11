@@ -3,7 +3,7 @@ const fs = require('fs');
 
 const CONFIG_PATH = path.join(__dirname, '../config/stream.json');
 
-// Valeurs non sensibles uniquement. Les secrets (streamKey, password) viennent de l'environnement (.env).
+// Non-sensitive values only. Secrets (streamKey, password) come from the environment (.env).
 const defaultConfig = {
   port: parseInt(process.env.PORT, 10) || 8080,
   streamUrl: process.env.STREAM_URL || 'rtmp://a.rtmp.youtube.com/live2',
@@ -19,15 +19,15 @@ function loadConfig() {
     if (fs.existsSync(CONFIG_PATH)) {
       const data = fs.readFileSync(CONFIG_PATH, 'utf8');
       const onDisk = JSON.parse(data);
-      // On ignore volontairement streamKey/password du JSON : ils sont gérés via .env
+      // Intentionally ignore streamKey/password from JSON: they are managed via .env
       delete onDisk.streamKey;
       delete onDisk.password;
       cfg = { ...cfg, ...onDisk };
     }
   } catch (err) {
-    console.error('Erreur chargement config:', err);
+    console.error('Error loading config:', err);
   }
-  // Secrets injectés depuis l'environnement
+  // Secrets injected from the environment
   cfg.streamKey = process.env.STREAM_KEY || '';
   cfg.passwordHash = process.env.DASHBOARD_PASSWORD_HASH || '';
   return cfg;
@@ -36,12 +36,12 @@ function loadConfig() {
 function saveConfig(config) {
   try {
     fs.mkdirSync(path.dirname(CONFIG_PATH), { recursive: true });
-    // Ne jamais réécrire les secrets dans le JSON
+    // Never write secrets back to the JSON file
     const { streamKey, password, passwordHash, ...safe } = config;
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(safe, null, 2));
     return true;
   } catch (err) {
-    console.error('Erreur sauvegarde config:', err);
+    console.error('Error saving config:', err);
     return false;
   }
 }

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lofi Radio - Grille TV</title>
+    <title>Lofi Radio - Schedule</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
@@ -688,16 +688,16 @@
 <body>
     <div class="noise"></div>
 
-    <div class="connection-status disconnected" id="connectionStatus">Hors ligne</div>
+    <div class="connection-status disconnected" id="connectionStatus">Offline</div>
 
     <header class="header">
         <div class="header-content">
             <h1 class="logo">LOFI RADIO</h1>
             <nav class="nav">
                 <a href="/dashboard" class="nav-btn">Dashboard</a>
-                <a href="/schedule" class="nav-btn active">Grille TV</a>
-                <a href="/text-management" class="nav-btn">Textes</a>
-                <a href="/logout" class="nav-btn">Deconnexion</a>
+                <a href="/schedule" class="nav-btn active">Schedule</a>
+                <a href="/text-management" class="nav-btn">Texts</a>
+                <a href="/logout" class="nav-btn">Log Out</a>
             </nav>
         </div>
     </header>
@@ -706,33 +706,33 @@
         <div id="alertContainer"></div>
 
         <div class="page-title">
-            Grille de Programmation
+            Program Schedule
             <span class="mode-indicator mode-music" id="modeIndicator">Mode: MUSIC</span>
         </div>
 
         <div class="grid">
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Grille Hebdomadaire</h2>
+                    <h2 class="card-title">Weekly Schedule</h2>
                     <button class="btn btn-primary btn-sm" onclick="openAddModal('weekly')">+ Ajouter</button>
                 </div>
                 <div class="card-body">
                     <div class="weekly-grid" id="weeklyGrid">
                         <div class="grid-header"></div>
-                        <div class="grid-header">Lun</div>
-                        <div class="grid-header">Mar</div>
-                        <div class="grid-header">Mer</div>
-                        <div class="grid-header">Jeu</div>
-                        <div class="grid-header">Ven</div>
-                        <div class="grid-header">Sam</div>
-                        <div class="grid-header">Dim</div>
+                        <div class="grid-header">Mon</div>
+                        <div class="grid-header">Tue</div>
+                        <div class="grid-header">Wed</div>
+                        <div class="grid-header">Thu</div>
+                        <div class="grid-header">Fri</div>
+                        <div class="grid-header">Sat</div>
+                        <div class="grid-header">Sun</div>
                     </div>
 
                     <div class="section-divider"></div>
 
-                    <h3 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 1rem;">Liste des Evenements Hebdomadaires</h3>
+                    <h3 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 1rem;">Weekly Events List</h3>
                     <div class="events-list" id="weeklyEventsList">
-                        <div class="no-events">Aucun evenement programme</div>
+                        <div class="no-events">No scheduled events</div>
                     </div>
                 </div>
             </div>
@@ -740,45 +740,45 @@
             <div>
                 <div class="card" style="margin-bottom: 1.5rem;">
                     <div class="card-header">
-                        <h2 class="card-title">Evenements Ponctuels</h2>
+                        <h2 class="card-title">One-Time Events</h2>
                         <button class="btn btn-primary btn-sm" onclick="openAddModal('onetime')">+ Ajouter</button>
                     </div>
                     <div class="card-body">
                         <div class="events-list" id="oneTimeEventsList">
-                            <div class="no-events">Aucun evenement ponctuel</div>
+                            <div class="no-events">No one-time events</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="card" style="margin-bottom: 1.5rem;">
                     <div class="card-header">
-                        <h2 class="card-title">Prochains Evenements</h2>
+                        <h2 class="card-title">Upcoming Events</h2>
                     </div>
                     <div class="card-body">
                         <div class="upcoming-list" id="upcomingList">
-                            <div class="no-events">Aucun evenement a venir</div>
+                            <div class="no-events">No upcoming events</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">Parametres par Defaut</h2>
+                        <h2 class="card-title">Default Settings</h2>
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label for="defaultPlaylist">Playlist de retour</label>
+                            <label for="defaultPlaylist">Fallback playlist</label>
                             <select id="defaultPlaylist">
-                                <option value="">Chargement...</option>
+                                <option value="">Loading...</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="defaultVideo">Video de retour</label>
+                            <label for="defaultVideo">Fallback video</label>
                             <select id="defaultVideo">
-                                <option value="">Chargement...</option>
+                                <option value="">Loading...</option>
                             </select>
                         </div>
-                        <button class="btn btn-secondary" onclick="saveDefaults()">Sauvegarder</button>
+                        <button class="btn btn-secondary" onclick="saveDefaults()">Save</button>
                     </div>
                 </div>
             </div>
@@ -789,7 +789,7 @@
     <div class="modal-overlay" id="eventModal">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title" id="modalTitle">Ajouter un Evenement</h3>
+                <h3 class="modal-title" id="modalTitle">Add an Event</h3>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body">
@@ -797,92 +797,92 @@
                 <input type="hidden" id="eventType" value="weekly">
 
                 <div class="form-group">
-                    <label for="eventName">Nom de l'evenement</label>
-                    <input type="text" id="eventName" placeholder="Ex: Promo Midi">
+                    <label for="eventName">Event name</label>
+                    <input type="text" id="eventName" placeholder="E.g.: Noon Promo">
                 </div>
 
                 <div id="weeklyFields">
                     <div class="form-group">
-                        <label>Jours de diffusion</label>
+                        <label>Broadcast days</label>
                         <div class="checkbox-group">
                             <div class="checkbox-item">
                                 <input type="checkbox" id="day1" value="1">
-                                <label for="day1">Lun</label>
+                                <label for="day1">Mon</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="day2" value="2">
-                                <label for="day2">Mar</label>
+                                <label for="day2">Tue</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="day3" value="3">
-                                <label for="day3">Mer</label>
+                                <label for="day3">Wed</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="day4" value="4">
-                                <label for="day4">Jeu</label>
+                                <label for="day4">Thu</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="day5" value="5">
-                                <label for="day5">Ven</label>
+                                <label for="day5">Fri</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="day6" value="6">
-                                <label for="day6">Sam</label>
+                                <label for="day6">Sat</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="day0" value="0">
-                                <label for="day0">Dim</label>
+                                <label for="day0">Sun</label>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="eventTime">Heure de diffusion</label>
+                        <label for="eventTime">Broadcast time</label>
                         <input type="time" id="eventTime" value="12:00">
                     </div>
                 </div>
 
                 <div id="oneTimeFields" style="display: none;">
                     <div class="form-group">
-                        <label for="eventDatetime">Date et heure</label>
+                        <label for="eventDatetime">Date and time</label>
                         <input type="datetime-local" id="eventDatetime">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="eventVideo">Video a diffuser</label>
+                    <label for="eventVideo">Video to broadcast</label>
                     <select id="eventVideo">
-                        <option value="">Chargement...</option>
+                        <option value="">Loading...</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="returnPlaylist">Playlist de retour</label>
+                    <label for="returnPlaylist">Fallback playlist</label>
                     <select id="returnPlaylist">
-                        <option value="">Par defaut</option>
+                        <option value="">Default</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="returnVideo">Video de retour</label>
+                    <label for="returnVideo">Fallback video</label>
                     <select id="returnVideo">
-                        <option value="">Par defaut</option>
+                        <option value="">Default</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="eventPriority">Priorite (plus haut = prioritaire)</label>
+                    <label for="eventPriority">Priority (higher = takes precedence)</label>
                     <input type="text" id="eventPriority" value="1" placeholder="1-100">
                 </div>
 
                 <div class="checkbox-item" style="margin-top: 1rem;">
                     <input type="checkbox" id="eventEnabled" checked>
-                    <label for="eventEnabled">Evenement actif</label>
+                    <label for="eventEnabled">Event enabled</label>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal()">Annuler</button>
-                <button class="btn btn-primary" onclick="saveEvent()">Enregistrer</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveEvent()">Save</button>
             </div>
         </div>
     </div>
@@ -901,7 +901,7 @@
             ws = new WebSocket(`${protocol}//${window.location.host}`);
 
             ws.onopen = () => {
-                document.getElementById('connectionStatus').textContent = 'Connecte';
+                document.getElementById('connectionStatus').textContent = 'Connected';
                 document.getElementById('connectionStatus').className = 'connection-status connected';
                 if (reconnectInterval) {
                     clearInterval(reconnectInterval);
@@ -915,7 +915,7 @@
             };
 
             ws.onclose = () => {
-                document.getElementById('connectionStatus').textContent = 'Hors ligne';
+                document.getElementById('connectionStatus').textContent = 'Offline';
                 document.getElementById('connectionStatus').className = 'connection-status disconnected';
                 if (!reconnectInterval) {
                     reconnectInterval = setInterval(connectWebSocket, 3000);
@@ -931,17 +931,17 @@
                 case 'modeChanged':
                     updateModeIndicator(message.data.mode);
                     if (message.data.mode === 'PROGRAM') {
-                        showAlert(`Programme demarre: ${message.data.video}`, 'success');
+                        showAlert(`Program started: ${message.data.video}`, 'success');
                     }
                     break;
                 case 'programEnded':
-                    showAlert(`Programme termine: ${message.data.video}`, 'success');
+                    showAlert(`Program ended: ${message.data.video}`, 'success');
                     break;
                 case 'musicResumed':
-                    showAlert(`Retour a la musique: ${message.data.playlist}`, 'success');
+                    showAlert(`Returned to music: ${message.data.playlist}`, 'success');
                     break;
                 case 'scheduleEventTriggered':
-                    showAlert(`Evenement declenche: ${message.data.name}`, 'success');
+                    showAlert(`Event triggered: ${message.data.name}`, 'success');
                     loadSchedule();
                     break;
                 case 'scheduleEventAdded':
@@ -966,8 +966,8 @@
 
                 const options = playlists.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
 
-                document.getElementById('defaultPlaylist').innerHTML = '<option value="">Selectionner...</option>' + options;
-                document.getElementById('returnPlaylist').innerHTML = '<option value="">Par defaut</option>' + options;
+                document.getElementById('defaultPlaylist').innerHTML = '<option value="">Select...</option>' + options;
+                document.getElementById('returnPlaylist').innerHTML = '<option value="">Default</option>' + options;
             } catch (err) {
                 console.error('Error loading playlists:', err);
             }
@@ -980,8 +980,8 @@
 
                 const options = backgroundVideos.map(v => `<option value="${v.name}">${v.name}</option>`).join('');
 
-                document.getElementById('defaultVideo').innerHTML = '<option value="">Selectionner...</option>' + options;
-                document.getElementById('returnVideo').innerHTML = '<option value="">Par defaut</option>' + options;
+                document.getElementById('defaultVideo').innerHTML = '<option value="">Select...</option>' + options;
+                document.getElementById('returnVideo').innerHTML = '<option value="">Default</option>' + options;
             } catch (err) {
                 console.error('Error loading background videos:', err);
             }
@@ -994,7 +994,7 @@
 
                 const options = programVideos.map(v => `<option value="${v.relativePath}">${v.name}</option>`).join('');
 
-                document.getElementById('eventVideo').innerHTML = '<option value="">Selectionner une video...</option>' + options;
+                document.getElementById('eventVideo').innerHTML = '<option value="">Select a video...</option>' + options;
             } catch (err) {
                 console.error('Error loading program videos:', err);
             }
@@ -1028,13 +1028,13 @@
                 const container = document.getElementById('upcomingList');
 
                 if (upcoming.length === 0) {
-                    container.innerHTML = '<div class="no-events">Aucun evenement a venir</div>';
+                    container.innerHTML = '<div class="no-events">No upcoming events</div>';
                     return;
                 }
 
                 container.innerHTML = upcoming.slice(0, 10).map(event => {
                     const date = new Date(event.scheduledTime);
-                    const timeStr = date.toLocaleString('fr-FR', {
+                    const timeStr = date.toLocaleString('en-US', {
                         weekday: 'short',
                         hour: '2-digit',
                         minute: '2-digit'
@@ -1043,7 +1043,7 @@
                         <div class="upcoming-item">
                             <div class="upcoming-time">${timeStr}</div>
                             <div class="upcoming-name">${event.name}</div>
-                            <button class="btn btn-sm btn-secondary" onclick="playNow('${event.id}')" title="Jouer maintenant">&#9654;</button>
+                            <button class="btn btn-sm btn-secondary" onclick="playNow('${event.id}')" title="Play now">&#9654;</button>
                         </div>
                     `;
                 }).join('');
@@ -1105,11 +1105,11 @@
             const events = scheduleData?.weeklyGrid || [];
 
             if (events.length === 0) {
-                container.innerHTML = '<div class="no-events">Aucun evenement hebdomadaire</div>';
+                container.innerHTML = '<div class="no-events">No weekly events</div>';
                 return;
             }
 
-            const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
             container.innerHTML = events.map(event => {
                 const days = event.dayOfWeek.map(d => dayNames[d]).join(', ');
@@ -1117,16 +1117,16 @@
                     <div class="event-item ${event.enabled ? '' : 'disabled'}">
                         <div class="event-header">
                             <span class="event-name">${event.name}</span>
-                            <span class="event-type weekly">Hebdo</span>
+                            <span class="event-type weekly">Weekly</span>
                         </div>
                         <div class="event-details">
-                            ${days} a ${event.startTime}<br>
+                            ${days} at ${event.startTime}<br>
                             Video: ${event.videoPath.split('/').pop()}
                         </div>
                         <div class="event-actions">
-                            <button class="btn btn-sm btn-secondary" onclick="playNow('${event.id}')">Jouer</button>
-                            <button class="btn btn-sm btn-secondary" onclick="openEditModal(${JSON.stringify(event).replace(/"/g, '&quot;')})">Modifier</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteEvent('${event.id}')">Suppr</button>
+                            <button class="btn btn-sm btn-secondary" onclick="playNow('${event.id}')">Play</button>
+                            <button class="btn btn-sm btn-secondary" onclick="openEditModal(${JSON.stringify(event).replace(/"/g, '&quot;')})">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteEvent('${event.id}')">Delete</button>
                         </div>
                     </div>
                 `;
@@ -1138,13 +1138,13 @@
             const events = scheduleData?.oneTimeEvents || [];
 
             if (events.length === 0) {
-                container.innerHTML = '<div class="no-events">Aucun evenement ponctuel</div>';
+                container.innerHTML = '<div class="no-events">No one-time events</div>';
                 return;
             }
 
             container.innerHTML = events.map(event => {
                 const date = new Date(event.datetime);
-                const dateStr = date.toLocaleString('fr-FR', {
+                const dateStr = date.toLocaleString('en-US', {
                     day: '2-digit',
                     month: '2-digit',
                     year: 'numeric',
@@ -1155,16 +1155,16 @@
                     <div class="event-item ${event.enabled ? '' : 'disabled'}">
                         <div class="event-header">
                             <span class="event-name">${event.name}</span>
-                            <span class="event-type onetime">Ponctuel</span>
+                            <span class="event-type onetime">One-time</span>
                         </div>
                         <div class="event-details">
                             ${dateStr}<br>
                             Video: ${event.videoPath.split('/').pop()}
                         </div>
                         <div class="event-actions">
-                            <button class="btn btn-sm btn-secondary" onclick="playNow('${event.id}')">Jouer</button>
-                            <button class="btn btn-sm btn-secondary" onclick="openEditModal(${JSON.stringify(event).replace(/"/g, '&quot;')})">Modifier</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteEvent('${event.id}')">Suppr</button>
+                            <button class="btn btn-sm btn-secondary" onclick="playNow('${event.id}')">Play</button>
+                            <button class="btn btn-sm btn-secondary" onclick="openEditModal(${JSON.stringify(event).replace(/"/g, '&quot;')})">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteEvent('${event.id}')">Delete</button>
                         </div>
                     </div>
                 `;
@@ -1172,7 +1172,7 @@
         }
 
         function openAddModal(type) {
-            document.getElementById('modalTitle').textContent = 'Ajouter un Evenement';
+            document.getElementById('modalTitle').textContent = 'Add an Event';
             document.getElementById('eventId').value = '';
             document.getElementById('eventType').value = type;
             document.getElementById('eventName').value = '';
@@ -1207,7 +1207,7 @@
 
         function openEditModal(event) {
             const isWeekly = event.dayOfWeek !== undefined;
-            document.getElementById('modalTitle').textContent = 'Modifier l\'Evenement';
+            document.getElementById('modalTitle').textContent = 'Edit Event';
             document.getElementById('eventId').value = event.id;
             document.getElementById('eventType').value = isWeekly ? 'weekly' : 'onetime';
             document.getElementById('eventName').value = event.name;
@@ -1254,7 +1254,7 @@
             const enabled = document.getElementById('eventEnabled').checked;
 
             if (!name || !videoPath) {
-                showAlert('Veuillez remplir le nom et la video', 'warning');
+                showAlert('Please fill in the name and video', 'warning');
                 return;
             }
 
@@ -1274,7 +1274,7 @@
                     if (checkbox && checkbox.checked) dayOfWeek.push(i);
                 }
                 if (dayOfWeek.length === 0) {
-                    showAlert('Veuillez selectionner au moins un jour', 'warning');
+                    showAlert('Please select at least one day', 'warning');
                     return;
                 }
                 data.dayOfWeek = dayOfWeek;
@@ -1282,7 +1282,7 @@
             } else {
                 const datetime = document.getElementById('eventDatetime').value;
                 if (!datetime) {
-                    showAlert('Veuillez selectionner une date et heure', 'warning');
+                    showAlert('Please select a date and time', 'warning');
                     return;
                 }
                 data.datetime = new Date(datetime).toISOString();
@@ -1307,19 +1307,19 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    showAlert(eventId ? 'Evenement modifie' : 'Evenement ajoute', 'success');
+                    showAlert(eventId ? 'Event updated' : 'Event added', 'success');
                     closeModal();
                     loadSchedule();
                 } else {
                     showAlert(result.error, 'error');
                 }
             } catch (err) {
-                showAlert('Erreur lors de la sauvegarde', 'error');
+                showAlert('Error saving event', 'error');
             }
         }
 
         async function deleteEvent(eventId) {
-            if (!confirm('Supprimer cet evenement ?')) return;
+            if (!confirm('Delete this event?')) return;
 
             try {
                 const response = await fetch(`/api/schedule/event/${eventId}`, {
@@ -1329,18 +1329,18 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    showAlert('Evenement supprime', 'success');
+                    showAlert('Event deleted', 'success');
                     loadSchedule();
                 } else {
                     showAlert(result.error, 'error');
                 }
             } catch (err) {
-                showAlert('Erreur lors de la suppression', 'error');
+                showAlert('Error deleting event', 'error');
             }
         }
 
         async function playNow(eventId) {
-            if (!confirm('Lancer cet evenement maintenant ?')) return;
+            if (!confirm('Play this event now?')) return;
 
             try {
                 const response = await fetch(`/api/schedule/play-now/${eventId}`, {
@@ -1350,12 +1350,12 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    showAlert('Evenement lance', 'success');
+                    showAlert('Event started', 'success');
                 } else {
                     showAlert(result.error, 'error');
                 }
             } catch (err) {
-                showAlert('Erreur lors du lancement', 'error');
+                showAlert('Error starting event', 'error');
             }
         }
 
@@ -1373,12 +1373,12 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    showAlert('Parametres sauvegardes', 'success');
+                    showAlert('Settings saved', 'success');
                 } else {
                     showAlert(result.error, 'error');
                 }
             } catch (err) {
-                showAlert('Erreur lors de la sauvegarde', 'error');
+                showAlert('Error saving settings', 'error');
             }
         }
 

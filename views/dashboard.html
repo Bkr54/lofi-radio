@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -545,16 +545,16 @@
 <body>
     <div class="noise"></div>
     
-    <div class="connection-status disconnected" id="connectionStatus">Hors ligne</div>
+    <div class="connection-status disconnected" id="connectionStatus">Offline</div>
     
     <header class="header">
         <div class="header-content">
             <h1 class="logo">LOFI RADIO</h1>
             <nav class="nav">
                 <a href="/dashboard" class="nav-btn active">Dashboard</a>
-                <a href="/schedule" class="nav-btn">Grille TV</a>
-                <a href="/text-management" class="nav-btn">Textes</a>
-                <a href="/logout" class="nav-btn">Deconnexion</a>
+                <a href="/schedule" class="nav-btn">Schedule</a>
+                <a href="/text-management" class="nav-btn">Texts</a>
+                <a href="/logout" class="nav-btn">Log out</a>
             </nav>
         </div>
     </header>
@@ -568,8 +568,8 @@
                     <span id="streamStatusSymbol">●</span>
                 </div>
                 <div class="status-info">
-                    <h3>Statut Stream</h3>
-                    <p id="streamStatusText">Hors ligne</p>
+                    <h3>Stream Status</h3>
+                    <p id="streamStatusText">Offline</p>
                 </div>
             </div>
             <div class="status-card">
@@ -586,7 +586,7 @@
                     <span>▶</span>
                 </div>
                 <div class="status-info">
-                    <h3>Vidéo</h3>
+                    <h3>Video</h3>
                     <p id="currentVideo">-</p>
                 </div>
             </div>
@@ -604,55 +604,55 @@
         <div class="grid">
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Contrôles Stream</h2>
+                    <h2 class="card-title">Stream Controls</h2>
                 </div>
                 <div class="card-body">
                     <div class="form-group">
-                        <label for="playlistSelect">Playlist MP3</label>
+                        <label for="playlistSelect">MP3 Playlist</label>
                         <select id="playlistSelect">
-                            <option value="">Chargement...</option>
+                            <option value="">Loading...</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label for="videoSelect">Vidéo de fond</label>
+                        <label for="videoSelect">Background Video</label>
                         <select id="videoSelect">
-                            <option value="">Chargement...</option>
+                            <option value="">Loading...</option>
                         </select>
                     </div>
 
                     <div class="btn-group">
                         <button class="btn btn-success" id="startBtn" onclick="startStream()">
-                            <span>▶</span> Démarrer
+                            <span>▶</span> Start
                         </button>
                         <button class="btn btn-secondary" id="stopBtn" onclick="stopStream()" disabled>
-                            <span>■</span> Arrêter
+                            <span>■</span> Stop
                         </button>
                         <button class="btn btn-danger" id="emergencyBtn" onclick="emergencyStop()">
-                            <span>⚠</span> STOP Urgent
+                            <span>⚠</span> EMERGENCY STOP
                         </button>
                     </div>
 
                     <div class="hot-swap-section">
-                        <h3 class="hot-swap-title">Hot Swap (sans coupure)</h3>
+                        <h3 class="hot-swap-title">Hot Swap (seamless)</h3>
                         <div class="form-group">
-                            <label for="hotSwapPlaylist">Changer Playlist</label>
+                            <label for="hotSwapPlaylist">Switch Playlist</label>
                             <select id="hotSwapPlaylist" disabled>
-                                <option value="">Sélectionner...</option>
+                                <option value="">Select...</option>
                             </select>
                         </div>
                         <button class="btn btn-secondary" id="hotSwapPlaylistBtn" onclick="hotSwapPlaylist()" disabled>
-                            Changer Playlist
+                            Switch Playlist
                         </button>
-                        
+
                         <div class="form-group" style="margin-top: 1rem;">
-                            <label for="hotSwapVideo">Changer Vidéo</label>
+                            <label for="hotSwapVideo">Switch Video</label>
                             <select id="hotSwapVideo" disabled>
-                                <option value="">Sélectionner...</option>
+                                <option value="">Select...</option>
                             </select>
                         </div>
                         <button class="btn btn-secondary" id="hotSwapVideoBtn" onclick="hotSwapVideo()" disabled>
-                            Changer Vidéo
+                            Switch Video
                         </button>
                     </div>
                 </div>
@@ -660,7 +660,7 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Lecture en cours</h2>
+                    <h2 class="card-title">Now Playing</h2>
                 </div>
                 <div class="card-body">
                     <div class="now-playing">
@@ -669,7 +669,7 @@
                                 <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
                             </svg>
                         </div>
-                        <div class="track-name" id="nowPlayingTrack">En attente...</div>
+                        <div class="track-name" id="nowPlayingTrack">Waiting...</div>
                         <div class="track-playlist" id="nowPlayingPlaylist">-</div>
                         <div class="progress-bar">
                             <div class="progress-fill" id="trackProgress" style="width: 0%"></div>
@@ -680,11 +680,11 @@
                     <div class="stats-grid" style="margin-top: 1.5rem;">
                         <div class="stat-item">
                             <div class="stat-value" id="tracksPlayed">0</div>
-                            <div class="stat-label">Morceaux joués</div>
+                            <div class="stat-label">Tracks Played</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-value" id="totalDuration">00:00</div>
-                            <div class="stat-label">Durée totale</div>
+                            <div class="stat-label">Total Duration</div>
                         </div>
                     </div>
                 </div>
@@ -692,29 +692,29 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Configuration Stream</h2>
+                    <h2 class="card-title">Stream Configuration</h2>
                 </div>
                 <div class="card-body">
                     <div class="form-group">
-                        <label for="streamKey">Clé de Stream YouTube</label>
+                        <label for="streamKey">YouTube Stream Key</label>
                         <div class="stream-key-form">
-                            <input type="text" id="streamKey" placeholder="Entrez votre clé de stream">
-                            <button class="btn btn-primary" onclick="saveStreamKey()">Sauver</button>
+                            <input type="text" id="streamKey" placeholder="Enter your stream key">
+                            <button class="btn btn-primary" onclick="saveStreamKey()">Save</button>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>URL de Stream</label>
+                        <label>Stream URL</label>
                         <input type="text" id="streamUrl" readonly value="rtmp://a.rtmp.youtube.com/live2">
                     </div>
 
                     <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; margin-top: 1rem;">
                         <h4 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 0.75rem;">Instructions</h4>
                         <ol style="font-size: 0.85rem; color: var(--text-secondary); padding-left: 1.25rem; line-height: 1.8;">
-                            <li>Entrez votre clé de stream YouTube</li>
-                            <li>Sélectionnez une playlist et une vidéo</li>
-                            <li>Cliquez sur "Démarrer"</li>
-                            <li>Utilisez "Hot Swap" pour changer sans coupure</li>
+                            <li>Enter your YouTube stream key</li>
+                            <li>Select a playlist and a video</li>
+                            <li>Click "Start"</li>
+                            <li>Use "Hot Swap" to switch without interruption</li>
                         </ol>
                     </div>
                 </div>
@@ -736,8 +736,8 @@
             ws = new WebSocket(`${protocol}//${window.location.host}`);
 
             ws.onopen = () => {
-                console.log('WebSocket connecté');
-                document.getElementById('connectionStatus').textContent = 'Connecté';
+                console.log('WebSocket connected');
+                document.getElementById('connectionStatus').textContent = 'Connected';
                 document.getElementById('connectionStatus').className = 'connection-status connected';
                 if (reconnectInterval) {
                     clearInterval(reconnectInterval);
@@ -751,8 +751,8 @@
             };
 
             ws.onclose = () => {
-                console.log('WebSocket déconnecté');
-                document.getElementById('connectionStatus').textContent = 'Hors ligne';
+                console.log('WebSocket disconnected');
+                document.getElementById('connectionStatus').textContent = 'Offline';
                 document.getElementById('connectionStatus').className = 'connection-status disconnected';
                 if (!reconnectInterval) {
                     reconnectInterval = setInterval(connectWebSocket, 3000);
@@ -760,7 +760,7 @@
             };
 
             ws.onerror = (error) => {
-                console.error('WebSocket erreur:', error);
+                console.error('WebSocket error:', error);
             };
         }
 
@@ -776,7 +776,7 @@
                     updateProgress(message.data);
                     break;
                 case 'hotSwap':
-                    showAlert(`Hot swap ${message.data.type} effectué: ${message.data.name}`, 'success');
+                    showAlert(`Hot swap ${message.data.type} applied: ${message.data.name}`, 'success');
                     break;
                 case 'error':
                     showAlert(message.data.error, 'error');
@@ -792,7 +792,7 @@
             
             if (data.isStreaming) {
                 statusIcon.className = 'status-icon online';
-                statusText.textContent = 'EN LIGNE';
+                statusText.textContent = 'ONLINE';
                 document.getElementById('startBtn').disabled = true;
                 document.getElementById('stopBtn').disabled = false;
                 document.getElementById('playlistSelect').disabled = true;
@@ -808,7 +808,7 @@
                 }
             } else {
                 statusIcon.className = 'status-icon offline';
-                statusText.textContent = 'Hors ligne';
+                statusText.textContent = 'Offline';
                 document.getElementById('startBtn').disabled = false;
                 document.getElementById('stopBtn').disabled = true;
                 document.getElementById('playlistSelect').disabled = false;
@@ -879,12 +879,12 @@
                 const response = await fetch('/api/playlists');
                 playlists = await response.json();
                 
-                const options = playlists.map(p => `<option value="${p.name}">${p.name} (${p.tracks} morceaux)</option>`).join('');
+                const options = playlists.map(p => `<option value="${p.name}">${p.name} (${p.tracks} tracks)</option>`).join('');
                 
-                document.getElementById('playlistSelect').innerHTML = '<option value="">Sélectionner...</option>' + options;
-                document.getElementById('hotSwapPlaylist').innerHTML = '<option value="">Sélectionner...</option>' + options;
+                document.getElementById('playlistSelect').innerHTML = '<option value="">Select...</option>' + options;
+                document.getElementById('hotSwapPlaylist').innerHTML = '<option value="">Select...</option>' + options;
             } catch (err) {
-                showAlert('Erreur chargement playlists', 'error');
+                showAlert('Error loading playlists', 'error');
             }
         }
 
@@ -895,10 +895,10 @@
                 
                 const options = videos.map(v => `<option value="${v.name}">${v.name}</option>`).join('');
                 
-                document.getElementById('videoSelect').innerHTML = '<option value="">Sélectionner...</option>' + options;
-                document.getElementById('hotSwapVideo').innerHTML = '<option value="">Sélectionner...</option>' + options;
+                document.getElementById('videoSelect').innerHTML = '<option value="">Select...</option>' + options;
+                document.getElementById('hotSwapVideo').innerHTML = '<option value="">Select...</option>' + options;
             } catch (err) {
-                showAlert('Erreur chargement vidéos', 'error');
+                showAlert('Error loading videos', 'error');
             }
         }
 
@@ -907,7 +907,7 @@
             const video = document.getElementById('videoSelect').value;
 
             if (!playlist || !video) {
-                showAlert('Veuillez sélectionner une playlist et une vidéo', 'warning');
+                showAlert('Please select a playlist and a video', 'warning');
                 return;
             }
 
@@ -921,12 +921,12 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showAlert('Stream démarré avec succès', 'success');
+                    showAlert('Stream started successfully', 'success');
                 } else {
                     showAlert(data.error, 'error');
                 }
             } catch (err) {
-                showAlert('Erreur lors du démarrage', 'error');
+                showAlert('Error starting stream', 'error');
             }
         }
 
@@ -936,15 +936,15 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showAlert('Stream arrêté', 'success');
+                    showAlert('Stream stopped', 'success');
                 }
             } catch (err) {
-                showAlert('Erreur lors de l\'arrêt', 'error');
+                showAlert('Error stopping stream', 'error');
             }
         }
 
         async function emergencyStop() {
-            if (!confirm('Êtes-vous sûr de vouloir arrêter immédiatement le stream ?')) {
+            if (!confirm('Are you sure you want to stop the stream immediately?')) {
                 return;
             }
 
@@ -953,10 +953,10 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showAlert('Arrêt d\'urgence effectué', 'error');
+                    showAlert('Emergency stop executed', 'error');
                 }
             } catch (err) {
-                showAlert('Erreur lors de l\'arrêt d\'urgence', 'error');
+                showAlert('Error during emergency stop', 'error');
             }
         }
 
@@ -964,7 +964,7 @@
             const playlist = document.getElementById('hotSwapPlaylist').value;
             
             if (!playlist) {
-                showAlert('Veuillez sélectionner une playlist', 'warning');
+                showAlert('Please select a playlist', 'warning');
                 return;
             }
 
@@ -978,12 +978,12 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showAlert('Playlist changée sans coupure', 'success');
+                    showAlert('Playlist switched seamlessly', 'success');
                 } else {
                     showAlert(data.error, 'error');
                 }
             } catch (err) {
-                showAlert('Erreur lors du changement de playlist', 'error');
+                showAlert('Error switching playlist', 'error');
             }
         }
 
@@ -991,7 +991,7 @@
             const video = document.getElementById('hotSwapVideo').value;
             
             if (!video) {
-                showAlert('Veuillez sélectionner une vidéo', 'warning');
+                showAlert('Please select a video', 'warning');
                 return;
             }
 
@@ -1005,12 +1005,12 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showAlert('Vidéo changée sans coupure', 'success');
+                    showAlert('Video switched seamlessly', 'success');
                 } else {
                     showAlert(data.error, 'error');
                 }
             } catch (err) {
-                showAlert('Erreur lors du changement de vidéo', 'error');
+                showAlert('Error switching video', 'error');
             }
         }
 
@@ -1018,7 +1018,7 @@
             const streamKey = document.getElementById('streamKey').value;
             
             if (!streamKey) {
-                showAlert('Veuillez entrer une clé de stream', 'warning');
+                showAlert('Please enter a stream key', 'warning');
                 return;
             }
 
@@ -1032,13 +1032,13 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showAlert('Clé de stream sauvegardée', 'success');
+                    showAlert('Stream key saved', 'success');
                     document.getElementById('streamKey').value = '';
                 } else {
                     showAlert(data.error, 'error');
                 }
             } catch (err) {
-                showAlert('Erreur lors de la sauvegarde', 'error');
+                showAlert('Error saving stream key', 'error');
             }
         }
 
@@ -1066,7 +1066,7 @@
                 const status = await response.json();
                 updateStatus(status);
             } catch (err) {
-                console.error('Erreur chargement statut:', err);
+                console.error('Error loading status:', err);
             }
         }
 

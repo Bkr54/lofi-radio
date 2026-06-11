@@ -1,24 +1,24 @@
 /**
- * streamEngineV2 — Moteur de streaming PERMANENT (hybride) pour la Radio Lofi.
+ * streamEngineV2 — PERMANENT (hybrid) streaming engine for Lofi Radio.
  *
- * Drop-in remplaçant de streamManager.js : MÊME API publique, MÊMES événements,
- * MÊME forme de getStatus(). Sélectionnable via STREAM_ENGINE=v2.
+ * Drop-in replacement for streamManager.js: SAME public API, SAME events,
+ * SAME getStatus() shape. Selectable via STREAM_ENGINE=v2.
  *
- * Principe (cf. docs/MOTEUR-PERMANENT-EVALUATION.md) :
- *   - Mode MUSIC : UN SEUL ffmpeg encodeur tourne en permanence.
- *       * vidéo de fond bouclée (-stream_loop -1)
- *       * audio gapless via une FIFO : node décode chaque mp3 en PCM s16le
- *         et enchaîne les flux dans le pipe -> aucune coupure entre morceaux.
- *       * overlays "Now Playing" + message via drawtext textfile reload=1
- *         -> le contrôleur écrit les fichiers texte, ffmpeg recharge à chaud.
- *     => changement de morceau = 0 reconnexion RTMP (vs ~410/jour en V1).
- *   - Mode PROGRAM : on accepte UNE reconnexion contrôlée (rare) pour diffuser
- *     une vidéo programmée avec son propre son, puis on reprend le moteur permanent.
- *   - hotSwap playlist : à chaud (on change la file du feeder, l'encodeur ne bouge pas).
- *   - hotSwap vidéo de fond / changement de position d'overlay : redémarrage contrôlé
- *     de l'encodeur (action manuelle rare).
+ * Design (see docs/MOTEUR-PERMANENT-EVALUATION.md):
+ *   - MUSIC mode: A SINGLE ffmpeg encoder runs continuously.
+ *       * looped background video (-stream_loop -1)
+ *       * gapless audio via a FIFO: node decodes each mp3 to PCM s16le
+ *         and chains streams through the pipe -> no gap between tracks.
+ *       * "Now Playing" + message overlays via drawtext textfile reload=1
+ *         -> the controller writes text files, ffmpeg hot-reloads them.
+ *     => track change = 0 RTMP reconnections (vs ~410/day in V1).
+ *   - PROGRAM mode: ONE controlled reconnection (rare) to broadcast a
+ *     scheduled video with its own audio, then resume the permanent engine.
+ *   - hotSwap playlist: live (the feeder queue is swapped, the encoder is untouched).
+ *   - hotSwap background video / overlay position change: controlled encoder
+ *     restart (rare manual action).
  *
- * Moteur permanent (gapless) pour streaming RTMP 24/7.
+ * Permanent (gapless) engine for 24/7 RTMP streaming.
  */
 
 const { spawn } = require('child_process');
@@ -42,19 +42,19 @@ class StreamEngineV2 extends EventEmitter {
     super();
     this.config = config;
 
-    // Process encodeur permanent (mode MUSIC) OU process programme (mode PROGRAM).
-    // Exposé sous le nom ffmpegProcess pour compat /healthz et server.js.
+    // Permanent encoder process (MUSIC mode) OR program process (PROGRAM mode).
+    // Exposed as ffmpegProcess for /healthz and server.js compatibility.
     this.ffmpegProcess = null;
 
-    // Feeder audio (mode MUSIC)
-    this.fifoStream = null;       // WritableStream vers la FIFO
-    this.decoderProcess = null;   // ffmpeg décodeur mp3 -> PCM en cours
+    // Audio feeder (MUSIC mode)
+    this.fifoStream = null;       // WritableStream to the FIFO
+    this.decoderProcess = null;   // ffmpeg mp3 -> PCM decoder in progress
     this.feederActive = false;
-    this.trackStartTime = 0;          // horloge de début du morceau courant
-    this.currentTrackDurationMs = 0;  // durée du morceau courant (ffprobe)
-    this.progressInterval = null;     // émission périodique de la progression
+    this.trackStartTime = 0;          // clock marking the start of the current track
+    this.currentTrackDurationMs = 0;  // current track duration (ffprobe)
+    this.progressInterval = null;     // periodic progress event emitter
 
-    // État playlist
+    // Playlist state
     this.currentPlaylist = null;
     this.currentVideo = null;
     this.currentTrack = null;
@@ -62,14 +62,14 @@ class StreamEngineV2 extends EventEmitter {
     this.currentTrackIndex = 0;
     this.pendingPlaylistSwap = null;
 
-    // Diffusion
+    // Streaming state
     this.isStreaming = false;
     this.isPaused = false;
-    this.stopping = false; // évite le redémarrage auto pendant un arrêt volontaire
+    this.stopping = false; // prevents auto-restart during a deliberate stop
 
     // Overlays
     this.textOverlay = {
-      nowPlaying: 'En attente...',
+      nowPlaying: 'Waiting...',
       message: 'Radio Lofi 24/7',
       nowPlayingPos: { x: 50, y: 640, fontSize: 32, color: '#ffffff', font: 'DejaVu Sans' },
       messagePos: { x: 50, y: 40, fontSize: 24, color: '#ffffff', font: 'DejaVu Sans' }
@@ -86,13 +86,13 @@ class StreamEngineV2 extends EventEmitter {
     this.programConfig = null;
     this.currentProgramVideo = null;
 
-    // Watchdog encodeur
+    // Encoder watchdog
     this.encoderWatchdog = null;
     this.lastEncoderOutput = 0;
-    this.restartCount = 0; // reconnexions involontaires (crash) — devrait rester ~0
+    this.restartCount = 0; // unintentional reconnections (crash) — should stay ~0
   }
 
-  // ───────────────────────── Helpers playlist (identiques V1) ─────────────────────────
+  // ───────────────────────── Playlist helpers (identical to V1) ─────────────────────────
 
   async getPlaylists() {
     const mp3Dir = path.join(__dirname, '../media/mp3');
@@ -143,7 +143,7 @@ class StreamEngineV2 extends EventEmitter {
     return true;
   }
 
-  // Durée d'un mp3 en ms (ffprobe rapide). 0 si inconnue.
+  // Duration of an mp3 in ms (fast ffprobe). Returns 0 if unknown.
   getTrackDurationMs(filePath) {
     try {
       const r = require('child_process').spawnSync('ffprobe',
@@ -167,8 +167,8 @@ class StreamEngineV2 extends EventEmitter {
 
   // ───────────────────────── Overlays (textfile reload) ─────────────────────────
 
-  // drawtext lit le texte depuis un fichier rechargé à chaque frame : aucune
-  // donnée sensible dans la ligne de commande, et mise à jour à chaud sans restart.
+  // drawtext reads text from a file reloaded every frame: no sensitive data
+  // in the command line, and live updates without a restart.
   writeOverlayFiles() {
     try { fs.mkdirSync(RUN_DIR, { recursive: true }); } catch (e) {}
     fs.writeFileSync(NOW_TXT, (this.textOverlay.nowPlaying || ' ') + '\n');
@@ -185,7 +185,7 @@ class StreamEngineV2 extends EventEmitter {
     try { fs.writeFileSync(MSG_TXT, (text || ' ') + '\n'); } catch (e) {}
   }
 
-  // Échappe un chemin pour le filtre ffmpeg (textfile=...).
+  // Escapes a path for use in an ffmpeg filter (textfile=...).
   escapePath(p) {
     return p.replace(/\\/g, '\\\\').replace(/:/g, '\\:').replace(/'/g, "\\'");
   }
@@ -209,7 +209,7 @@ class StreamEngineV2 extends EventEmitter {
   }
 
   outputTarget() {
-    // Permet un override local (selftest) sans toucher au RTMP de prod.
+    // Allows a local override (self-test) without touching the production RTMP URL.
     if (this.config.outputOverride) return this.config.outputOverride;
     return `${this.config.streamUrl}/${this.config.streamKey}`;
   }
@@ -219,30 +219,30 @@ class StreamEngineV2 extends EventEmitter {
   ensureFifo() {
     try { fs.mkdirSync(RUN_DIR, { recursive: true }); } catch (e) {}
     try {
-      // (re)crée la FIFO proprement
+      // (re)create the FIFO cleanly
       if (fs.existsSync(FIFO_PATH)) fs.unlinkSync(FIFO_PATH);
     } catch (e) {}
     const r = spawn('mkfifo', [FIFO_PATH]);
     return new Promise((resolve, reject) => {
-      r.on('close', (code) => code === 0 ? resolve() : reject(new Error('mkfifo a échoué')));
+      r.on('close', (code) => code === 0 ? resolve() : reject(new Error('mkfifo failed')));
       r.on('error', reject);
     });
   }
 
-  // ───────────────────────── Démarrage MUSIC ─────────────────────────
+  // ───────────────────────── MUSIC startup ─────────────────────────
 
   async startStream(playlistName, videoName) {
-    if (this.isStreaming) throw new Error('Stream déjà en cours');
+    if (this.isStreaming) throw new Error('Stream already running');
     if (!this.config.streamKey && !this.config.outputOverride) {
-      throw new Error('Clé de stream non configurée');
+      throw new Error('Stream key not configured');
     }
     if (this.config.streamKey === 'STAGING_KEY_A_REMPLACER' && !this.config.outputOverride) {
-      throw new Error('Clé STAGING non configurée : colle une vraie clé YouTube de test dans .env (STREAM_KEY).');
+      throw new Error('STAGING key not configured: paste a real YouTube test key into .env (STREAM_KEY).');
     }
 
     const videoPath = path.join(__dirname, '../media/mp4/bg', videoName);
-    if (!fs.existsSync(videoPath)) throw new Error('Vidéo de fond non trouvée');
-    if (!(await this.loadPlaylist(playlistName))) throw new Error('Playlist non trouvée ou vide');
+    if (!fs.existsSync(videoPath)) throw new Error('Background video not found');
+    if (!(await this.loadPlaylist(playlistName))) throw new Error('Playlist not found or empty');
 
     this.currentVideo = videoName;
     this.isStreaming = true;
@@ -252,7 +252,7 @@ class StreamEngineV2 extends EventEmitter {
     this.stats.startTime = Date.now();
     this.stats.tracksPlayed = 0;
 
-    this.textOverlay.nowPlaying = 'En attente...';
+    this.textOverlay.nowPlaying = 'Waiting...';
     this.writeOverlayFiles();
     this.startMessageRotation();
 
@@ -267,7 +267,7 @@ class StreamEngineV2 extends EventEmitter {
     return true;
   }
 
-  // Lance l'encodeur permanent + le feeder audio gapless.
+  // Starts the permanent encoder + the gapless audio feeder.
   async startMusicEngine() {
     await this.ensureFifo();
 
@@ -276,8 +276,8 @@ class StreamEngineV2 extends EventEmitter {
     const fps = this.config.fps || 24;
 
     const args = [
-      '-re', '-stream_loop', '-1', '-i', videoPath,            // vidéo de fond en boucle (horloge réaliste)
-      '-f', 's16le', '-ar', String(PCM_RATE), '-ac', String(PCM_CHANNELS), '-i', FIFO_PATH, // audio PCM gapless
+      '-re', '-stream_loop', '-1', '-i', videoPath,            // looped background video (realistic clock)
+      '-f', 's16le', '-ar', String(PCM_RATE), '-ac', String(PCM_CHANNELS), '-i', FIFO_PATH, // gapless PCM audio
       '-filter_complex', filter,
       '-map', '[v]', '-map', '1:a',
       '-c:v', 'libx264', '-preset', 'ultrafast',
@@ -288,20 +288,20 @@ class StreamEngineV2 extends EventEmitter {
       '-f', 'flv', this.outputTarget()
     ];
 
-    logger.info('V2: démarrage encodeur PERMANENT (mode MUSIC)');
+    logger.info('V2: starting PERMANENT encoder (MUSIC mode)');
     this.ffmpegProcess = spawn('ffmpeg', args, { detached: false });
     this.attachEncoderHandlers(this.ffmpegProcess);
     this.startEncoderWatchdog();
 
-    // Ouvre l'extrémité écriture de la FIFO (se débloque quand ffmpeg ouvre la lecture),
-    // puis démarre l'alimentation audio.
+    // Opens the write end of the FIFO (unblocks once ffmpeg opens the read end),
+    // then starts feeding audio.
     this.fifoStream = fs.createWriteStream(FIFO_PATH);
     this.fifoStream.on('error', (err) => {
-      // EPIPE quand l'encodeur meurt : géré par le watchdog/close.
-      if (err && err.code !== 'EPIPE') logger.error('V2 FIFO erreur:', err.message);
+      // EPIPE when the encoder dies: handled by the watchdog/close handler.
+      if (err && err.code !== 'EPIPE') logger.error('V2 FIFO error:', err.message);
     });
     this.fifoStream.on('open', () => {
-      logger.info('V2: FIFO ouverte, démarrage du feeder audio gapless');
+      logger.info('V2: FIFO open, starting gapless audio feeder');
       this.feederActive = true;
       this.feedNextTrack();
     });
@@ -313,21 +313,21 @@ class StreamEngineV2 extends EventEmitter {
       this.lastEncoderOutput = Date.now();
       const output = data.toString();
       if (output.includes('Error') || output.includes('error')) {
-        // bruit normal possible ; on logue en debug léger
+        // possibly normal noise; only log the actionable cases
         if (/fail|invalid|unable|Connection refused/i.test(output)) logger.error('V2 ffmpeg:', output.trim().slice(0, 300));
       }
     });
     proc.on('close', (code) => {
-      logger.info(`V2: encodeur terminé (code ${code})`);
+      logger.info(`V2: encoder exited (code ${code})`);
       if (this.stopping || !this.isStreaming || this.mode !== 'MUSIC') return;
-      // Mort involontaire de l'encodeur permanent -> reconnexion de secours.
+      // Unexpected death of the permanent encoder -> emergency reconnection.
       this.restartCount++;
-      logger.error(`V2: encodeur permanent mort de façon inattendue, reconnexion #${this.restartCount}`);
-      this.emit('error', 'Encodeur permanent interrompu, reconnexion…');
+      logger.error(`V2: permanent encoder died unexpectedly, reconnecting #${this.restartCount}`);
+      this.emit('error', 'Permanent encoder interrupted, reconnecting…');
       this.teardownFeeder();
       setTimeout(() => {
         if (this.isStreaming && this.mode === 'MUSIC' && !this.stopping) {
-          this.startMusicEngine().catch(e => logger.error('V2: échec reconnexion', e.message));
+          this.startMusicEngine().catch(e => logger.error('V2: reconnection failed', e.message));
         }
       }, 1000);
     });
@@ -337,18 +337,18 @@ class StreamEngineV2 extends EventEmitter {
     });
   }
 
-  // Enchaîne les morceaux dans la FIFO sans jamais couper l'encodeur.
+  // Chains tracks into the FIFO without ever stopping the encoder.
   feedNextTrack() {
     if (!this.feederActive || !this.isStreaming || this.isPaused) return;
 
-    // Application d'un changement de playlist programmé (à chaud)
+    // Apply a pending live playlist swap
     if (this.pendingPlaylistSwap) {
       const target = this.pendingPlaylistSwap;
       this.pendingPlaylistSwap = null;
-      // loadPlaylist est synchrone côté disque ici
+      // loadPlaylist is synchronous on the disk side here
       this.loadPlaylist(target).then((ok) => {
         if (ok) this.emit('hotSwap', { type: 'playlist', name: target });
-        else logger.error(`V2: playlist introuvable: ${target}`);
+        else logger.error(`V2: playlist not found: ${target}`);
         this.spawnDecoderForNext();
       });
       return;
@@ -358,14 +358,14 @@ class StreamEngineV2 extends EventEmitter {
 
   spawnDecoderForNext() {
     const track = this.getNextTrack();
-    if (!track) { this.emit('error', 'Aucun morceau disponible'); return; }
+    if (!track) { this.emit('error', 'No track available'); return; }
 
-    // V2_TRACK_LIMIT_SEC : coupe chaque morceau à N s (utile pour tests/preview rapides).
+    // V2_TRACK_LIMIT_SEC: trims each track to N seconds (useful for fast tests/previews).
     const limit = parseInt(process.env.V2_TRACK_LIMIT_SEC, 10);
 
     this.currentTrack = track;
     this.stats.tracksPlayed++;
-    // Durée du morceau (réelle, ou bornée si limit) pour la progression et la durée totale.
+    // Track duration (actual, or capped by limit) used for progress and total duration.
     const probed = this.getTrackDurationMs(track.path);
     this.currentTrackDurationMs = (limit > 0) ? Math.min(limit * 1000, probed || limit * 1000) : probed;
     this.trackStartTime = Date.now();
@@ -379,7 +379,7 @@ class StreamEngineV2 extends EventEmitter {
       duration: this.currentTrackDurationMs
     });
 
-    // Progression émise toutes les 2 s (horloge réaliste : diffusion calée temps réel).
+    // Progress emitted every 2 s (realistic clock: broadcast locked to real time).
     if (this.progressInterval) clearInterval(this.progressInterval);
     this.progressInterval = setInterval(() => {
       if (this.currentTrackDurationMs > 0) {
@@ -388,7 +388,7 @@ class StreamEngineV2 extends EventEmitter {
       }
     }, 2000);
 
-    // Décode le mp3 en PCM s16le et pousse dans la FIFO (sans fermer la FIFO).
+    // Decodes the mp3 to PCM s16le and pushes it into the FIFO (without closing the FIFO).
     const decArgs = ['-hide_banner', '-loglevel', 'error', '-i', track.path];
     if (limit > 0) decArgs.push('-t', String(limit));
     decArgs.push('-f', 's16le', '-ar', String(PCM_RATE), '-ac', String(PCM_CHANNELS),
@@ -399,24 +399,24 @@ class StreamEngineV2 extends EventEmitter {
 
     dec.stderr.on('data', (d) => {
       const s = d.toString();
-      if (s.trim()) logger.error('V2 décodeur:', s.trim().slice(0, 200));
+      if (s.trim()) logger.error('V2 decoder:', s.trim().slice(0, 200));
     });
 
-    // Backpressure naturelle : si la FIFO est pleine (ffmpeg consomme à ~temps réel),
-    // pipe() met le décodeur en pause -> alimentation calée sur le temps réel.
+    // Natural backpressure: if the FIFO is full (ffmpeg consumes at ~real time),
+    // pipe() pauses the decoder -> feeding is locked to real time.
     if (this.fifoStream) dec.stdout.pipe(this.fifoStream, { end: false });
 
     dec.on('close', () => {
       this.decoderProcess = null;
       if (this.progressInterval) { clearInterval(this.progressInterval); this.progressInterval = null; }
-      // Cumul de la durée totale diffusée (alimente "Durée totale" du dashboard).
+      // Accumulate total broadcast duration (feeds the dashboard "Total Duration" stat).
       if (this.currentTrackDurationMs > 0) this.stats.totalDuration += this.currentTrackDurationMs;
       if (this.feederActive && this.isStreaming && !this.isPaused && this.mode === 'MUSIC') {
-        // Morceau suivant immédiatement -> audio continu (gapless).
+        // Start next track immediately -> continuous (gapless) audio.
         this.feedNextTrack();
       }
     });
-    dec.on('error', (err) => logger.error('V2 décodeur error:', err.message));
+    dec.on('error', (err) => logger.error('V2 decoder error:', err.message));
   }
 
   teardownFeeder() {
@@ -440,9 +440,9 @@ class StreamEngineV2 extends EventEmitter {
     this.encoderWatchdog = setInterval(() => {
       if (this.mode !== 'MUSIC' || !this.isStreaming || this.stopping) return;
       if (Date.now() - this.lastEncoderOutput > 30000) {
-        logger.error('V2 watchdog: aucune sortie encodeur depuis 30s, redémarrage');
+        logger.error('V2 watchdog: no encoder output for 30s, restarting');
         if (this.ffmpegProcess) { try { this.ffmpegProcess.kill('SIGKILL'); } catch (e) {} }
-        // le handler close() relancera startMusicEngine
+        // the close() handler will relaunch startMusicEngine
       }
     }, 10000);
   }
@@ -451,14 +451,14 @@ class StreamEngineV2 extends EventEmitter {
     if (this.encoderWatchdog) { clearInterval(this.encoderWatchdog); this.encoderWatchdog = null; }
   }
 
-  // ───────────────────────── Messages rotatifs ─────────────────────────
+  // ───────────────────────── Rotating messages ─────────────────────────
 
   startMessageRotation() {
     if (this.messageInterval) clearInterval(this.messageInterval);
     this.messageInterval = setInterval(() => {
       if (this.messages.length > 0) {
         this.currentMessageIndex = (this.currentMessageIndex + 1) % this.messages.length;
-        this.setMessage(this.messages[this.currentMessageIndex]); // reload à chaud, aucun restart
+        this.setMessage(this.messages[this.currentMessageIndex]); // live reload, no restart
       }
     }, 30000);
   }
@@ -474,35 +474,35 @@ class StreamEngineV2 extends EventEmitter {
   // ───────────────────────── hotSwap ─────────────────────────
 
   async hotSwapPlaylist(playlistName) {
-    if (!this.isStreaming) throw new Error('Aucun stream en cours');
+    if (!this.isStreaming) throw new Error('No stream running');
     const playlistPath = path.join(__dirname, '../media/mp3', playlistName);
     if (!fs.existsSync(playlistPath) ||
         fs.readdirSync(playlistPath).filter(f => f.endsWith('.mp3')).length === 0) {
-      throw new Error('Playlist non trouvée ou vide');
+      throw new Error('Playlist not found or empty');
     }
-    // À chaud : appliqué au prochain morceau, SANS toucher l'encodeur (0 reconnexion).
+    // Live swap: applied on the next track, WITHOUT touching the encoder (0 reconnections).
     this.pendingPlaylistSwap = playlistName;
-    logger.info(`V2: hotSwap playlist programmé (à chaud): ${playlistName}`);
+    logger.info(`V2: playlist hotSwap scheduled (live): ${playlistName}`);
     return true;
   }
 
   async hotSwapVideo(videoName) {
-    if (!this.isStreaming) throw new Error('Aucun stream en cours');
+    if (!this.isStreaming) throw new Error('No stream running');
     const videoPath = path.join(__dirname, '../media/mp4/bg', videoName);
-    if (!fs.existsSync(videoPath)) throw new Error('Vidéo non trouvée');
-    // Changer la source vidéo dans un ffmpeg vivant n'est pas trivial : redémarrage
-    // contrôlé de l'encodeur permanent (action manuelle rare). Le feeder audio
-    // continue d'alimenter la FIFO -> reprise quasi immédiate.
+    if (!fs.existsSync(videoPath)) throw new Error('Video not found');
+    // Changing the video source in a live ffmpeg process is not trivial: controlled
+    // restart of the permanent encoder (rare manual action). The audio feeder
+    // keeps feeding the FIFO -> near-instant resumption.
     this.currentVideo = videoName;
-    logger.info(`V2: hotSwap vidéo de fond -> ${videoName} (redémarrage contrôlé encodeur)`);
+    logger.info(`V2: background video hotSwap -> ${videoName} (controlled encoder restart)`);
     await this.restartEncoderOnly();
     this.emit('hotSwap', { type: 'video', name: videoName });
     return true;
   }
 
-  // Redémarre uniquement l'encodeur (garde le feeder/FIFO) — pour changement vidéo/overlay.
+  // Restarts only the encoder (keeps the feeder/FIFO) — for video/overlay changes.
   async restartEncoderOnly() {
-    this.stopping = true; // empêche le close-handler de relancer en double
+    this.stopping = true; // prevents the close-handler from triggering a double restart
     this.teardownFeeder();
     if (this.ffmpegProcess) {
       try { this.ffmpegProcess.kill('SIGTERM'); } catch (e) {}
@@ -517,39 +517,39 @@ class StreamEngineV2 extends EventEmitter {
     await this.startMusicEngine();
   }
 
-  // ───────────────────────── Overlay update (position/couleur) ─────────────────────────
+  // ───────────────────────── Overlay update (position/color) ─────────────────────────
 
   async updateTextOverlay(overlayConfig) {
     const prev = this.textOverlay;
     this.textOverlay = { ...this.textOverlay, ...overlayConfig };
     this.writeOverlayFiles();
 
-    // Le TEXTE est rechargé à chaud (textfile reload). Seuls position/taille/couleur/police
-    // exigent de reconstruire le graphe -> redémarrage contrôlé de l'encodeur.
+    // TEXT is hot-reloaded (textfile reload). Only position/size/color/font
+    // require rebuilding the filter graph -> controlled encoder restart.
     const layoutChanged = JSON.stringify(prev.nowPlayingPos) !== JSON.stringify(this.textOverlay.nowPlayingPos) ||
                           JSON.stringify(prev.messagePos) !== JSON.stringify(this.textOverlay.messagePos);
     if (this.isStreaming && this.mode === 'MUSIC' && layoutChanged) {
-      logger.info('V2: changement de mise en page overlay -> redémarrage contrôlé encodeur');
+      logger.info('V2: overlay layout changed -> controlled encoder restart');
       await this.restartEncoderOnly();
     }
     this.emit('textUpdate', this.textOverlay);
     return true;
   }
 
-  // ───────────────────────── PROGRAM mode (hybride : reconnexion contrôlée) ─────────────────────────
+  // ───────────────────────── PROGRAM mode (hybrid: controlled reconnection) ─────────────────────────
 
   async startProgram(videoPath, returnConfig) {
-    if (!this.isStreaming) throw new Error('Aucun stream en cours');
-    if (this.mode === 'PROGRAM') throw new Error('Un programme est déjà en cours');
-    if (!fs.existsSync(videoPath)) throw new Error('Vidéo programmée non trouvée');
+    if (!this.isStreaming) throw new Error('No stream running');
+    if (this.mode === 'PROGRAM') throw new Error('A program is already running');
+    if (!fs.existsSync(videoPath)) throw new Error('Scheduled video not found');
 
     this.programConfig = {
       playlist: returnConfig.playlist || this.currentPlaylist,
       video: returnConfig.video || this.currentVideo
     };
-    logger.info(`V2: PROGRAM -> ${path.basename(videoPath)} (reconnexion contrôlée)`);
+    logger.info(`V2: PROGRAM -> ${path.basename(videoPath)} (controlled reconnection)`);
 
-    // On arrête proprement le moteur permanent (feeder + encodeur).
+    // Cleanly stop the permanent engine (feeder + encoder).
     this.stopping = true;
     this.teardownFeeder();
     this.stopEncoderWatchdog();
@@ -593,7 +593,7 @@ class StreamEngineV2 extends EventEmitter {
       if (/fail|invalid|unable/i.test(s)) logger.error('V2 PROGRAM ffmpeg:', s.trim().slice(0, 200));
     });
     this.ffmpegProcess.on('close', () => {
-      logger.info('V2: PROGRAM terminé');
+      logger.info('V2: PROGRAM ended');
       if (this.mode === 'PROGRAM' && this.isStreaming && this.programConfig) {
         this.emit('program:ended', { video: path.basename(videoPath) });
         this.returnToMusic();
@@ -609,7 +609,7 @@ class StreamEngineV2 extends EventEmitter {
   async returnToMusic() {
     if (!this.programConfig) return;
     const { playlist, video } = this.programConfig;
-    logger.info(`V2: retour MUSIC (playlist=${playlist}, video=${video})`);
+    logger.info(`V2: returning to MUSIC (playlist=${playlist}, video=${video})`);
     this.mode = 'MUSIC';
     const cfg = this.programConfig;
     this.programConfig = null;
@@ -621,7 +621,7 @@ class StreamEngineV2 extends EventEmitter {
     await new Promise(r => setTimeout(r, 500));
 
     if (!(await this.loadPlaylist(playlist))) {
-      this.emit('error', `Échec rechargement playlist: ${playlist}`);
+      this.emit('error', `Failed to reload playlist: ${playlist}`);
       return;
     }
     this.currentVideo = video;
@@ -632,15 +632,15 @@ class StreamEngineV2 extends EventEmitter {
   }
 
   async stopProgram() {
-    if (this.mode !== 'PROGRAM') throw new Error('Aucun programme en cours');
-    logger.info('V2: arrêt manuel du PROGRAM');
+    if (this.mode !== 'PROGRAM') throw new Error('No program running');
+    logger.info('V2: manual PROGRAM stop');
     if (this.programConfig) {
       await this.returnToMusic();
     }
     return true;
   }
 
-  // ───────────────────────── Arrêt ─────────────────────────
+  // ───────────────────────── Shutdown ─────────────────────────
 
   stopStream() {
     this.stopping = true;
@@ -665,7 +665,7 @@ class StreamEngineV2 extends EventEmitter {
   }
 
   emergencyStop() {
-    logger.warn('V2: ARRET D URGENCE');
+    logger.warn('V2: EMERGENCY STOP');
     this.stopping = true;
     this.stopEncoderWatchdog();
     this.teardownFeeder();
@@ -674,7 +674,7 @@ class StreamEngineV2 extends EventEmitter {
     this.currentProgramVideo = null;
     this.ffmpegProcess = null;
     try { require('child_process').execSync('pkill -9 -f "ffmpeg.*audio.fifo" 2>/dev/null || true'); } catch (e) {}
-    // Filet : ne tue que les ffmpeg de CETTE instance (identifiés par le chemin de leur FIFO).
+    // Safety net: only kills ffmpeg processes belonging to THIS instance (identified by their FIFO path).
     this.isStreaming = false;
     this.isPaused = false;
     this.pendingPlaylistSwap = null;

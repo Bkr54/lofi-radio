@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -254,16 +254,16 @@
         
         <div class="login-header">
             <h1 class="logo">LOFI RADIO</h1>
-            <p class="subtitle">Dashboard de Streaming 24/7</p>
+            <p class="subtitle">24/7 Streaming Dashboard</p>
         </div>
         
         <form id="loginForm">
             <div class="form-group">
-                <label for="password">Mot de passe</label>
+                <label for="password">Password</label>
                 <input type="password" id="password" name="password" required autofocus>
             </div>
             
-            <button type="submit" class="btn">Connexion</button>
+            <button type="submit" class="btn">Sign In</button>
         </form>
         
         <div class="error-message" id="errorMessage"></div>
@@ -288,11 +288,11 @@
                 if (data.success) {
                     window.location.href = '/dashboard';
                 } else {
-                    errorMessage.textContent = data.error || 'Mot de passe incorrect';
+                    errorMessage.textContent = data.error || 'Incorrect password';
                     errorMessage.classList.add('show');
                 }
             } catch (err) {
-                errorMessage.textContent = 'Erreur de connexion';
+                errorMessage.textContent = 'Connection error';
                 errorMessage.classList.add('show');
             }
         });

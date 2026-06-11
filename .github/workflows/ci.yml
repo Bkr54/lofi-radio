@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Lint & syntax check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --omit=dev
+
+      - name: Syntax-check JavaScript
+        run: |
+          set -e
+          for f in src/*.js bin/*.js; do
+            echo "node --check $f"
+            node --check "$f"
+          done
+
+      - name: Syntax-check shell scripts
+        run: |
+          set -e
+          for f in deploy/*.sh; do
+            echo "bash -n $f"
+            bash -n "$f"
+          done
+
+      - name: Validate example JSON
+        run: |
+          set -e
+          for f in config/*.example.json; do
+            echo "validate $f"
+            node -e "JSON.parse(require('fs').readFileSync('$f','utf8'))"
+          done

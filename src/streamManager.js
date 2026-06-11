@@ -17,7 +17,7 @@ class StreamManager extends EventEmitter {
     this.playlistQueue = [];
     this.currentTrackIndex = 0;
     this.textOverlay = {
-      nowPlaying: 'En attente...',
+      nowPlaying: 'Waiting...',
       message: 'Radio Lofi 24/7',
       nowPlayingPos: { x: 50, y: 640, fontSize: 32, color: '#ffffff', font: 'DejaVu Sans' },
       messagePos: { x: 50, y: 40, fontSize: 24, color: '#ffffff', font: 'DejaVu Sans' }
@@ -53,9 +53,9 @@ class StreamManager extends EventEmitter {
     this.lastFFmpegOutput = Date.now();
 
     this.ffmpegWatchdog = setInterval(() => {
-      // Si pas de sortie FFmpeg depuis 30 secondes, considerer comme mort
+      // If no FFmpeg output for 30 seconds, consider it dead
       if (Date.now() - this.lastFFmpegOutput > 30000) {
-        logger.error('FFmpeg watchdog: Pas de sortie depuis 30s, redemarrage...');
+        logger.error('FFmpeg watchdog: No output for 30s, restarting...');
         this.handleFFmpegDeath();
       }
     }, 10000);
@@ -71,21 +71,21 @@ class StreamManager extends EventEmitter {
   handleFFmpegDeath() {
     this.stopFFmpegWatchdog();
 
-    // Tuer le processus zombie
+    // Kill the zombie process
     if (this.ffmpegProcess) {
       try { this.ffmpegProcess.kill('SIGKILL'); } catch(e) {}
       this.ffmpegProcess = null;
     }
 
-    // Force kill systeme en backup
+    // System-level force kill as backup
     try {
       require('child_process').execSync('pkill -9 ffmpeg 2>/dev/null || true');
     } catch(e) {}
 
-    // Si on etait en streaming, tenter de redemarrer
+    // If we were streaming, attempt to restart
     if (this.isStreaming && this.mode === 'MUSIC') {
-      logger.info('Tentative de redemarrage automatique...');
-      // Reprise plus rapide après mort de ffmpeg (2000->500ms)
+      logger.info('Attempting automatic restart...');
+      // Faster recovery after ffmpeg death (2000->500ms)
       setTimeout(() => this.playNextTrack(), 500);
     }
   }
@@ -188,8 +188,8 @@ class StreamManager extends EventEmitter {
     
     const messageFilter = `drawtext=text='${messageText}':fontsize=${messagePos.fontSize}:fontcolor=${messagePos.color}:fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:x=${messagePos.x}:y=${messagePos.y}:box=1:boxcolor=black@0.5:boxborderw=10`;
     
-    // Axe 2 : normalise toute source (musique 720p, programmes 1080p) vers la résolution/fps cible
-    // AVANT le drawtext, pour une sortie uniforme et un coût d'encodage maîtrisé.
+    // Normalise all sources (music 720p, programmes 1080p) to the target resolution/fps
+    // BEFORE drawtext, for uniform output and controlled encoding cost.
     const [vw, vh] = (this.config.resolution || '1280x720').split('x');
     const vfps = this.config.fps || 24;
     return `[0:v]scale=${vw}:${vh},fps=${vfps},${nowPlayingFilter},${messageFilter}[vout]`;
@@ -197,20 +197,20 @@ class StreamManager extends EventEmitter {
 
   async startStream(playlistName, videoName) {
     if (this.isStreaming) {
-      throw new Error('Stream déjà en cours');
+      throw new Error('Stream already running');
     }
 
     if (!this.config.streamKey) {
-      throw new Error('Clé de stream non configurée');
+      throw new Error('Stream key not configured');
     }
 
     const videoPath = path.join(__dirname, '../media/mp4/bg', videoName);
     if (!fs.existsSync(videoPath)) {
-      throw new Error('Vidéo de fond non trouvée');
+      throw new Error('Background video not found');
     }
 
     if (!(await this.loadPlaylist(playlistName))) {
-      throw new Error('Playlist non trouvée ou vide');
+      throw new Error('Playlist not found or empty');
     }
 
     this.currentVideo = videoName;
@@ -251,7 +251,7 @@ class StreamManager extends EventEmitter {
 
     const track = this.getNextTrack();
     if (!track) {
-      this.emit('error', 'Aucun morceau disponible');
+      this.emit('error', 'No track available');
       return;
     }
 
@@ -305,7 +305,7 @@ class StreamManager extends EventEmitter {
       `${this.config.streamUrl}/${this.config.streamKey}`
     ];
 
-    logger.info('Démarrage FFmpeg avec:', track.name);
+    logger.info('Starting FFmpeg with:', track.name);
 
     this.ffmpegProcess = spawn('ffmpeg', args, { detached: false });
 
@@ -354,12 +354,12 @@ class StreamManager extends EventEmitter {
     });
 
     this.ffmpegProcess.on('close', (code) => {
-      logger.info(`FFmpeg terminé avec code ${code}`);
+      logger.info(`FFmpeg exited with code ${code}`);
 
       // Automatically play next track when this one finishes
       if (this.isStreaming && !this.isPaused && code !== null) {
         this.stats.totalDuration += trackDuration;
-        // Gap inter-morceau réduit (1000->250ms) pour limiter le vidage du tampon RTMP YouTube
+        // Reduced inter-track gap (1000->250ms) to limit YouTube RTMP buffer drain
         setTimeout(() => this.playNextTrack(), 250);
       }
     });
@@ -385,20 +385,20 @@ class StreamManager extends EventEmitter {
 
   async hotSwapPlaylist(playlistName) {
     if (!this.isStreaming) {
-      throw new Error('Aucun stream en cours');
+      throw new Error('No stream running');
     }
 
     // Validate playlist exists before scheduling swap
     const playlistPath = path.join(__dirname, '../media/mp3', playlistName);
     if (!fs.existsSync(playlistPath)) {
-      throw new Error('Playlist non trouvée ou vide');
+      throw new Error('Playlist not found or empty');
     }
 
     const files = fs.readdirSync(playlistPath)
       .filter(f => f.endsWith('.mp3'));
 
     if (files.length === 0) {
-      throw new Error('Playlist non trouvée ou vide');
+      throw new Error('Playlist not found or empty');
     }
 
     // Schedule playlist swap at end of current track
@@ -410,13 +410,13 @@ class StreamManager extends EventEmitter {
 
   async hotSwapVideo(videoName) {
     if (!this.isStreaming) {
-      throw new Error('Aucun stream en cours');
+      throw new Error('No stream running');
     }
 
     // Validate video file
     const videoPath = path.join(__dirname, '../media/mp4/bg', videoName);
     if (!fs.existsSync(videoPath)) {
-      throw new Error('Vidéo non trouvée');
+      throw new Error('Video not found');
     }
 
     const wasPlaying = this.currentTrack;
@@ -465,16 +465,16 @@ class StreamManager extends EventEmitter {
 
   async startProgram(videoPath, returnConfig) {
     if (!this.isStreaming) {
-      throw new Error('Aucun stream en cours');
+      throw new Error('No stream running');
     }
 
     if (this.mode === 'PROGRAM') {
-      throw new Error('Un programme est déjà en cours');
+      throw new Error('A program is already running');
     }
 
     // Validate video file
     if (!fs.existsSync(videoPath)) {
-      throw new Error('Vidéo programmée non trouvée');
+      throw new Error('Scheduled video not found');
     }
 
     // Save config for return to MUSIC mode
@@ -616,7 +616,7 @@ class StreamManager extends EventEmitter {
 
   async stopProgram() {
     if (this.mode !== 'PROGRAM') {
-      throw new Error('Aucun programme en cours');
+      throw new Error('No program running');
     }
 
     logger.info('Stopping PROGRAM mode manually');
@@ -728,7 +728,7 @@ class StreamManager extends EventEmitter {
   }
 
   emergencyStop() {
-    logger.warn('ARRET D URGENCE DU STREAM');
+    logger.warn('EMERGENCY STREAM STOP');
 
     // Stop watchdog first
     this.stopFFmpegWatchdog();
