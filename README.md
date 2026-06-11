@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎵 lofi-radio
+# 🎵 24/7 Youtube Radio
 
 ### Your own 24/7 music radio, livestreaming to YouTube from a tiny VPS.
 
