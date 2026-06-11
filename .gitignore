@@ -1,0 +1,31 @@
+# Secrets & environment
+.env
+*.env
+!.env.example
+
+# Runtime config (copy from the .example files)
+config/stream.json
+config/schedule.json
+
+# Dependencies
+node_modules/
+
+# Media library (users add their own)
+media/mp3/**
+media/mp4/bg/**
+media/mp4/video/**
+!media/**/.gitkeep
+!media/**/README.md
+
+# Runtime / generated
+run/
+logs/
+*.log
+*.flv
+*.bak
+*.bak.*
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

@@ -1,0 +1,37 @@
+# systemd unit template for lofi-radio.
+# Copy to /etc/systemd/system/lofi-radio.service and replace __USER__ / __APP_DIR__.
+#   sudo cp deploy/lofi-radio.service.example /etc/systemd/system/lofi-radio.service
+#   sudo sed -i 's#__USER__#lofiradio#; s#__APP_DIR__#/opt/lofi-radio#' /etc/systemd/system/lofi-radio.service
+#   sudo systemctl daemon-reload && sudo systemctl enable --now lofi-radio
+
+[Unit]
+Description=lofi-radio - 24/7 music livestream
+After=network.target
+
+[Service]
+Type=simple
+User=__USER__
+Group=__USER__
+WorkingDirectory=__APP_DIR__
+Environment=NODE_ENV=production
+EnvironmentFile=__APP_DIR__/.env
+ExecStart=/usr/bin/node __APP_DIR__/src/server.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Hardening (the service runs unprivileged and sandboxed)
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=__APP_DIR__
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

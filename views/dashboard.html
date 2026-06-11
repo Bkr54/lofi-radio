@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lofi Radio - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a25;
+            --bg-hover: #252535;
+            --accent: #ff6b6b;
+            --accent-secondary: #4ecdc4;
+            --text-primary: #f0f0f5;
+            --text-secondary: #8a8a9a;
+            --border: #2a2a3a;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --error: #e74c3c;
+            --offline: #6c757d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.02;
+            z-index: 0;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-btn {
+            padding: 0.6rem 1rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .status-icon.online {
+            background: rgba(46, 204, 113, 0.1);
+            color: var(--success);
+        }
+
+        .status-icon.offline {
+            background: rgba(108, 117, 125, 0.1);
+            color: var(--offline);
+        }
+
+        .status-icon.warning {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--warning);
+        }
+
+        .status-info h3 {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .status-info p {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        select, input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        select:disabled, input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #ff8585);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            border-color: var(--accent-secondary);
+            color: var(--accent-secondary);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #27ae60);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--error), #c0392b);
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .now-playing {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .track-visual {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1.5rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .track-visual::before {
+            content: '';
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            background: var(--bg-card);
+        }
+
+        .track-visual svg {
+            position: relative;
+            z-index: 1;
+            width: 40px;
+            height: 40px;
+        }
+
+        .track-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            word-break: break-word;
+        }
+
+        .track-playlist {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--bg-hover);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .stat-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+        }
+
+        .stream-key-form {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .stream-key-form input {
+            flex: 1;
+        }
+
+        .hot-swap-section {
+            border-top: 1px solid var(--border);
+            margin-top: 1rem;
+            padding-top: 1rem;
+        }
+
+        .hot-swap-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-secondary);
+            margin-bottom: 1rem;
+        }
+
+        #alertContainer {
+            position: fixed;
+            top: 5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            width: 90%;
+            max-width: 500px;
+            pointer-events: none;
+        }
+
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            pointer-events: auto;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideInFromTop 0.4s ease;
+        }
+
+        @keyframes slideInFromTop {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .alert-error {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+
+        .alert-warning {
+            background: rgba(243, 156, 18, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .connection-status.connected {
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .connection-status.disconnected {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .nav {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .stream-key-form {
+                flex-direction: column;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+    
+    <div class="connection-status disconnected" id="connectionStatus">Hors ligne</div>
+    
+    <header class="header">
+        <div class="header-content">
+            <h1 class="logo">LOFI RADIO</h1>
+            <nav class="nav">
+                <a href="/dashboard" class="nav-btn active">Dashboard</a>
+                <a href="/schedule" class="nav-btn">Grille TV</a>
+                <a href="/text-management" class="nav-btn">Textes</a>
+                <a href="/logout" class="nav-btn">Deconnexion</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div id="alertContainer"></div>
+
+        <div class="status-bar">
+            <div class="status-card">
+                <div class="status-icon offline" id="streamStatusIcon">
+                    <span id="streamStatusSymbol">●</span>
+                </div>
+                <div class="status-info">
+                    <h3>Statut Stream</h3>
+                    <p id="streamStatusText">Hors ligne</p>
+                </div>
+            </div>
+            <div class="status-card">
+                <div class="status-icon offline">
+                    <span>♪</span>
+                </div>
+                <div class="status-info">
+                    <h3>Playlist</h3>
+                    <p id="currentPlaylist">-</p>
+                </div>
+            </div>
+            <div class="status-card">
+                <div class="status-icon offline">
+                    <span>▶</span>
+                </div>
+                <div class="status-info">
+                    <h3>Vidéo</h3>
+                    <p id="currentVideo">-</p>
+                </div>
+            </div>
+            <div class="status-card">
+                <div class="status-icon offline">
+                    <span>◷</span>
+                </div>
+                <div class="status-info">
+                    <h3>Uptime</h3>
+                    <p id="uptime">00:00:00</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Contrôles Stream</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="playlistSelect">Playlist MP3</label>
+                        <select id="playlistSelect">
+                            <option value="">Chargement...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="videoSelect">Vidéo de fond</label>
+                        <select id="videoSelect">
+                            <option value="">Chargement...</option>
+                        </select>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-success" id="startBtn" onclick="startStream()">
+                            <span>▶</span> Démarrer
+                        </button>
+                        <button class="btn btn-secondary" id="stopBtn" onclick="stopStream()" disabled>
+                            <span>■</span> Arrêter
+                        </button>
+                        <button class="btn btn-danger" id="emergencyBtn" onclick="emergencyStop()">
+                            <span>⚠</span> STOP Urgent
+                        </button>
+                    </div>
+
+                    <div class="hot-swap-section">
+                        <h3 class="hot-swap-title">Hot Swap (sans coupure)</h3>
+                        <div class="form-group">
+                            <label for="hotSwapPlaylist">Changer Playlist</label>
+                            <select id="hotSwapPlaylist" disabled>
+                                <option value="">Sélectionner...</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-secondary" id="hotSwapPlaylistBtn" onclick="hotSwapPlaylist()" disabled>
+                            Changer Playlist
+                        </button>
+                        
+                        <div class="form-group" style="margin-top: 1rem;">
+                            <label for="hotSwapVideo">Changer Vidéo</label>
+                            <select id="hotSwapVideo" disabled>
+                                <option value="">Sélectionner...</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-secondary" id="hotSwapVideoBtn" onclick="hotSwapVideo()" disabled>
+                            Changer Vidéo
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Lecture en cours</h2>
+                </div>
+                <div class="card-body">
+                    <div class="now-playing">
+                        <div class="track-visual">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                            </svg>
+                        </div>
+                        <div class="track-name" id="nowPlayingTrack">En attente...</div>
+                        <div class="track-playlist" id="nowPlayingPlaylist">-</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="trackProgress" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text" id="trackProgressText">0%</div>
+                    </div>
+
+                    <div class="stats-grid" style="margin-top: 1.5rem;">
+                        <div class="stat-item">
+                            <div class="stat-value" id="tracksPlayed">0</div>
+                            <div class="stat-label">Morceaux joués</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalDuration">00:00</div>
+                            <div class="stat-label">Durée totale</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Configuration Stream</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="streamKey">Clé de Stream YouTube</label>
+                        <div class="stream-key-form">
+                            <input type="text" id="streamKey" placeholder="Entrez votre clé de stream">
+                            <button class="btn btn-primary" onclick="saveStreamKey()">Sauver</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>URL de Stream</label>
+                        <input type="text" id="streamUrl" readonly value="rtmp://a.rtmp.youtube.com/live2">
+                    </div>
+
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; margin-top: 1rem;">
+                        <h4 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-secondary); margin-bottom: 0.75rem;">Instructions</h4>
+                        <ol style="font-size: 0.85rem; color: var(--text-secondary); padding-left: 1.25rem; line-height: 1.8;">
+                            <li>Entrez votre clé de stream YouTube</li>
+                            <li>Sélectionnez une playlist et une vidéo</li>
+                            <li>Cliquez sur "Démarrer"</li>
+                            <li>Utilisez "Hot Swap" pour changer sans coupure</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let ws = null;
+        let reconnectInterval = null;
+        let isStreaming = false;
+        let playlists = [];
+        let videos = [];
+        let startTime = null;
+        let uptimeInterval = null;
+
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}`);
+
+            ws.onopen = () => {
+                console.log('WebSocket connecté');
+                document.getElementById('connectionStatus').textContent = 'Connecté';
+                document.getElementById('connectionStatus').className = 'connection-status connected';
+                if (reconnectInterval) {
+                    clearInterval(reconnectInterval);
+                    reconnectInterval = null;
+                }
+            };
+
+            ws.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                handleWebSocketMessage(message);
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket déconnecté');
+                document.getElementById('connectionStatus').textContent = 'Hors ligne';
+                document.getElementById('connectionStatus').className = 'connection-status disconnected';
+                if (!reconnectInterval) {
+                    reconnectInterval = setInterval(connectWebSocket, 3000);
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket erreur:', error);
+            };
+        }
+
+        function handleWebSocketMessage(message) {
+            switch (message.type) {
+                case 'status':
+                    updateStatus(message.data);
+                    break;
+                case 'trackChange':
+                    updateNowPlaying(message.data);
+                    break;
+                case 'progress':
+                    updateProgress(message.data);
+                    break;
+                case 'hotSwap':
+                    showAlert(`Hot swap ${message.data.type} effectué: ${message.data.name}`, 'success');
+                    break;
+                case 'error':
+                    showAlert(message.data.error, 'error');
+                    break;
+            }
+        }
+
+        function updateStatus(data) {
+            isStreaming = data.isStreaming;
+            
+            const statusIcon = document.getElementById('streamStatusIcon');
+            const statusText = document.getElementById('streamStatusText');
+            
+            if (data.isStreaming) {
+                statusIcon.className = 'status-icon online';
+                statusText.textContent = 'EN LIGNE';
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+                document.getElementById('playlistSelect').disabled = true;
+                document.getElementById('videoSelect').disabled = true;
+                document.getElementById('hotSwapPlaylist').disabled = false;
+                document.getElementById('hotSwapPlaylistBtn').disabled = false;
+                document.getElementById('hotSwapVideo').disabled = false;
+                document.getElementById('hotSwapVideoBtn').disabled = false;
+                
+                if (!startTime && data.stats?.startTime) {
+                    startTime = data.stats.startTime;
+                    startUptimeTimer();
+                }
+            } else {
+                statusIcon.className = 'status-icon offline';
+                statusText.textContent = 'Hors ligne';
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+                document.getElementById('playlistSelect').disabled = false;
+                document.getElementById('videoSelect').disabled = false;
+                document.getElementById('hotSwapPlaylist').disabled = true;
+                document.getElementById('hotSwapPlaylistBtn').disabled = true;
+                document.getElementById('hotSwapVideo').disabled = true;
+                document.getElementById('hotSwapVideoBtn').disabled = true;
+                stopUptimeTimer();
+                startTime = null;
+            }
+
+            document.getElementById('currentPlaylist').textContent = data.currentPlaylist || '-';
+            document.getElementById('currentVideo').textContent = data.currentVideo || '-';
+            
+            if (data.currentTrack) {
+                document.getElementById('nowPlayingTrack').textContent = data.currentTrack;
+                document.getElementById('nowPlayingPlaylist').textContent = data.currentPlaylist || '-';
+            }
+
+            if (data.stats) {
+                document.getElementById('tracksPlayed').textContent = data.stats.tracksPlayed || 0;
+                document.getElementById('totalDuration').textContent = formatDuration(data.stats.totalDuration || 0);
+            }
+        }
+
+        function updateNowPlaying(data) {
+            document.getElementById('nowPlayingTrack').textContent = data.name;
+            document.getElementById('nowPlayingPlaylist').textContent = data.playlist;
+            document.getElementById('trackProgress').style.width = '0%';
+            document.getElementById('trackProgressText').textContent = '0%';
+        }
+
+        function updateProgress(data) {
+            document.getElementById('trackProgress').style.width = data.progress + '%';
+            document.getElementById('trackProgressText').textContent = Math.round(data.progress) + '%';
+        }
+
+        function startUptimeTimer() {
+            stopUptimeTimer();
+            uptimeInterval = setInterval(() => {
+                if (startTime) {
+                    const uptime = Date.now() - startTime;
+                    document.getElementById('uptime').textContent = formatDuration(uptime);
+                }
+            }, 1000);
+        }
+
+        function stopUptimeTimer() {
+            if (uptimeInterval) {
+                clearInterval(uptimeInterval);
+                uptimeInterval = null;
+            }
+            document.getElementById('uptime').textContent = '00:00:00';
+        }
+
+        function formatDuration(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const remainingMinutes = minutes % 60;
+            const remainingSeconds = seconds % 60;
+            return `${hours.toString().padStart(2, '0')}:${remainingMinutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        async function loadPlaylists() {
+            try {
+                const response = await fetch('/api/playlists');
+                playlists = await response.json();
+                
+                const options = playlists.map(p => `<option value="${p.name}">${p.name} (${p.tracks} morceaux)</option>`).join('');
+                
+                document.getElementById('playlistSelect').innerHTML = '<option value="">Sélectionner...</option>' + options;
+                document.getElementById('hotSwapPlaylist').innerHTML = '<option value="">Sélectionner...</option>' + options;
+            } catch (err) {
+                showAlert('Erreur chargement playlists', 'error');
+            }
+        }
+
+        async function loadVideos() {
+            try {
+                const response = await fetch('/api/videos');
+                videos = await response.json();
+                
+                const options = videos.map(v => `<option value="${v.name}">${v.name}</option>`).join('');
+                
+                document.getElementById('videoSelect').innerHTML = '<option value="">Sélectionner...</option>' + options;
+                document.getElementById('hotSwapVideo').innerHTML = '<option value="">Sélectionner...</option>' + options;
+            } catch (err) {
+                showAlert('Erreur chargement vidéos', 'error');
+            }
+        }
+
+        async function startStream() {
+            const playlist = document.getElementById('playlistSelect').value;
+            const video = document.getElementById('videoSelect').value;
+
+            if (!playlist || !video) {
+                showAlert('Veuillez sélectionner une playlist et une vidéo', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/stream/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ playlist, video })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Stream démarré avec succès', 'success');
+                } else {
+                    showAlert(data.error, 'error');
+                }
+            } catch (err) {
+                showAlert('Erreur lors du démarrage', 'error');
+            }
+        }
+
+        async function stopStream() {
+            try {
+                const response = await fetch('/api/stream/stop', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Stream arrêté', 'success');
+                }
+            } catch (err) {
+                showAlert('Erreur lors de l\'arrêt', 'error');
+            }
+        }
+
+        async function emergencyStop() {
+            if (!confirm('Êtes-vous sûr de vouloir arrêter immédiatement le stream ?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/stream/emergency-stop', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Arrêt d\'urgence effectué', 'error');
+                }
+            } catch (err) {
+                showAlert('Erreur lors de l\'arrêt d\'urgence', 'error');
+            }
+        }
+
+        async function hotSwapPlaylist() {
+            const playlist = document.getElementById('hotSwapPlaylist').value;
+            
+            if (!playlist) {
+                showAlert('Veuillez sélectionner une playlist', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/stream/hotswap/playlist', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ playlist })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Playlist changée sans coupure', 'success');
+                } else {
+                    showAlert(data.error, 'error');
+                }
+            } catch (err) {
+                showAlert('Erreur lors du changement de playlist', 'error');
+            }
+        }
+
+        async function hotSwapVideo() {
+            const video = document.getElementById('hotSwapVideo').value;
+            
+            if (!video) {
+                showAlert('Veuillez sélectionner une vidéo', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/stream/hotswap/video', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ video })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Vidéo changée sans coupure', 'success');
+                } else {
+                    showAlert(data.error, 'error');
+                }
+            } catch (err) {
+                showAlert('Erreur lors du changement de vidéo', 'error');
+            }
+        }
+
+        async function saveStreamKey() {
+            const streamKey = document.getElementById('streamKey').value;
+            
+            if (!streamKey) {
+                showAlert('Veuillez entrer une clé de stream', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/config/stream-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ streamKey })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Clé de stream sauvegardée', 'success');
+                    document.getElementById('streamKey').value = '';
+                } else {
+                    showAlert(data.error, 'error');
+                }
+            } catch (err) {
+                showAlert('Erreur lors de la sauvegarde', 'error');
+            }
+        }
+
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.classList.add('show');
+            
+            container.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        async function init() {
+            connectWebSocket();
+            await loadPlaylists();
+            await loadVideos();
+            
+            try {
+                const response = await fetch('/api/status');
+                const status = await response.json();
+                updateStatus(status);
+            } catch (err) {
+                console.error('Erreur chargement statut:', err);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

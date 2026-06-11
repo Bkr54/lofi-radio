@@ -1,0 +1,24 @@
+# nginx reverse-proxy template for lofi-radio (WebSocket-aware).
+# 1) Replace __DOMAIN__ and __PORT__ (the PORT from your .env).
+# 2) Put this in /etc/nginx/sites-available/__DOMAIN__ and symlink into sites-enabled.
+# 3) Get HTTPS:  sudo certbot --nginx -d __DOMAIN__
+#    (certbot rewrites this file to add the SSL listener + redirect.)
+
+server {
+    listen 80;
+    server_name __DOMAIN__;
+
+    location / {
+        proxy_pass http://127.0.0.1:__PORT__;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket support (live dashboard updates)
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 86400;
+    }
+}

@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lofi Radio - Gestion des Textes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a25;
+            --bg-hover: #252535;
+            --accent: #ff6b6b;
+            --accent-secondary: #4ecdc4;
+            --text-primary: #f0f0f5;
+            --text-secondary: #8a8a9a;
+            --border: #2a2a3a;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --error: #e74c3c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.02;
+            z-index: 0;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-btn {
+            padding: 0.6rem 1rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        .preview-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            aspect-ratio: 16/9;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .preview-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+        }
+
+        .preview-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .preview-text {
+            position: absolute;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 4px;
+            font-family: 'DejaVu Sans', sans-serif;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .preview-text.now-playing {
+            color: #ffffff;
+            font-size: 18px;
+        }
+
+        .preview-text.message {
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 45px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .position-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #ff8585);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-secondary);
+            color: var(--accent-secondary);
+        }
+
+        .btn-danger {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+
+        .btn-danger:hover {
+            background: var(--error);
+            color: white;
+        }
+
+        .messages-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .message-item {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .message-item input {
+            flex: 1;
+        }
+
+        .preset-positions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .preset-btn {
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .info-box {
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid var(--accent-secondary);
+            border-radius: 6px;
+            padding: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .info-box strong {
+            color: var(--accent-secondary);
+        }
+
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .alert-error {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent);
+            margin: 1.5rem 0 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .section-title:first-of-type {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .nav {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .position-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .preset-positions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+    
+    <header class="header">
+        <div class="header-content">
+            <h1 class="logo">LOFI RADIO</h1>
+            <nav class="nav">
+                <a href="/dashboard" class="nav-btn">Dashboard</a>
+                <a href="/schedule" class="nav-btn">Grille TV</a>
+                <a href="/text-management" class="nav-btn active">Textes</a>
+                <a href="/logout" class="nav-btn">Deconnexion</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div id="alertContainer"></div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Aperçu Overlay</h2>
+                </div>
+                <div class="card-body">
+                    <div class="preview-container">
+                        <div class="preview-video" style="background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);"></div>
+                        <div class="preview-overlay">
+                            <div class="preview-text now-playing" id="previewNowPlaying" style="left: 50px; bottom: 100px;">
+                                Now Playing: Lofi Track Name
+                            </div>
+                            <div class="preview-text message" id="previewMessage" style="left: 50px; top: 50px;">
+                                Radio Lofi 24/7
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <strong>ℹ Info:</strong> Cet aperçu montre approximativement le rendu final. Les positions sont relatives à une résolution de 1920x1080.
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Position Now Playing</h2>
+                </div>
+                <div class="card-body">
+                    <div class="preset-positions">
+                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'bottomLeft')">Bas Gauche</button>
+                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'bottomCenter')">Bas Centre</button>
+                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'bottomRight')">Bas Droite</button>
+                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'topLeft')">Haut Gauche</button>
+                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'topCenter')">Haut Centre</button>
+                        <button class="preset-btn" onclick="setPreset('nowPlaying', 'topRight')">Haut Droite</button>
+                    </div>
+
+                    <div class="position-grid">
+                        <div class="form-group">
+                            <label for="nowPlayingX">Position X (px)</label>
+                            <input type="number" id="nowPlayingX" value="50" min="0" max="1920">
+                        </div>
+                        <div class="form-group">
+                            <label for="nowPlayingY">Position Y (px)</label>
+                            <input type="number" id="nowPlayingY" value="980" min="0" max="1080">
+                        </div>
+                        <div class="form-group">
+                            <label for="nowPlayingFontSize">Taille police (px)</label>
+                            <input type="number" id="nowPlayingFontSize" value="48" min="12" max="120">
+                        </div>
+                        <div class="form-group">
+                            <label for="nowPlayingColor">Couleur</label>
+                            <input type="color" id="nowPlayingColor" value="#ffffff">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Position Message</h2>
+                </div>
+                <div class="card-body">
+                    <div class="preset-positions">
+                        <button class="preset-btn" onclick="setPreset('message', 'bottomLeft')">Bas Gauche</button>
+                        <button class="preset-btn" onclick="setPreset('message', 'bottomCenter')">Bas Centre</button>
+                        <button class="preset-btn" onclick="setPreset('message', 'bottomRight')">Bas Droite</button>
+                        <button class="preset-btn" onclick="setPreset('message', 'topLeft')">Haut Gauche</button>
+                        <button class="preset-btn" onclick="setPreset('message', 'topCenter')">Haut Centre</button>
+                        <button class="preset-btn" onclick="setPreset('message', 'topRight')">Haut Droite</button>
+                    </div>
+
+                    <div class="position-grid">
+                        <div class="form-group">
+                            <label for="messageX">Position X (px)</label>
+                            <input type="number" id="messageX" value="50" min="0" max="1920">
+                        </div>
+                        <div class="form-group">
+                            <label for="messageY">Position Y (px)</label>
+                            <input type="number" id="messageY" value="50" min="0" max="1080">
+                        </div>
+                        <div class="form-group">
+                            <label for="messageFontSize">Taille police (px)</label>
+                            <input type="number" id="messageFontSize" value="36" min="12" max="120">
+                        </div>
+                        <div class="form-group">
+                            <label for="messageColor">Couleur</label>
+                            <input type="color" id="messageColor" value="#ffffff">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Messages Dynamiques</h2>
+                </div>
+                <div class="card-body">
+                    <div class="info-box">
+                        <strong>ℹ Info:</strong> Ces messages defileront automatiquement toutes les 30 secondes. Pas d'emojis supportes.
+                    </div>
+
+                    <div class="messages-list" id="messagesList">
+                        <div class="message-item">
+                            <input type="text" class="message-input" value="Radio Lofi 24/7" placeholder="Entrez un message...">
+                            <button class="btn btn-danger" onclick="removeMessage(this)">✕</button>
+                        </div>
+                        <div class="message-item">
+                            <input type="text" class="message-input" value="Relax & Study" placeholder="Entrez un message...">
+                            <button class="btn btn-danger" onclick="removeMessage(this)">✕</button>
+                        </div>
+                        <div class="message-item">
+                            <input type="text" class="message-input" value="Chill Vibes Only" placeholder="Entrez un message...">
+                            <button class="btn btn-danger" onclick="removeMessage(this)">✕</button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-secondary" onclick="addMessage()" style="width: 100%; margin-bottom: 1rem;">
+                        + Ajouter un message
+                    </button>
+
+                    <button class="btn btn-primary" onclick="saveMessages()" style="width: 100%;">
+                        Sauvegarder les messages
+                    </button>
+                </div>
+            </div>
+
+            <div class="card" style="grid-column: 1 / -1;">
+                <div class="card-header">
+                    <h2 class="card-title">Appliquer les changements</h2>
+                </div>
+                <div class="card-body">
+                    <div class="info-box">
+                        <strong>⚠ Important:</strong> Les changements seront appliques immediatement au stream en cours. Le flux ne sera pas interrompu.
+                    </div>
+
+                    <button class="btn btn-primary" onclick="applyOverlayChanges()" style="width: 100%;">
+                        Appliquer les positions et styles
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const presets = {
+            bottomLeft: { x: 50, y: 980 },
+            bottomCenter: { x: 800, y: 980 },
+            bottomRight: { x: 1400, y: 980 },
+            topLeft: { x: 50, y: 50 },
+            topCenter: { x: 800, y: 50 },
+            topRight: { x: 1400, y: 50 }
+        };
+
+        function setPreset(element, position) {
+            const preset = presets[position];
+            if (element === 'nowPlaying') {
+                document.getElementById('nowPlayingX').value = preset.x;
+                document.getElementById('nowPlayingY').value = preset.y;
+                updatePreview();
+            } else {
+                document.getElementById('messageX').value = preset.x;
+                document.getElementById('messageY').value = preset.y;
+                updatePreview();
+            }
+        }
+
+        function updatePreview() {
+            const nowPlaying = document.getElementById('previewNowPlaying');
+            const message = document.getElementById('previewMessage');
+            
+            const nowPlayingX = document.getElementById('nowPlayingX').value;
+            const nowPlayingY = document.getElementById('nowPlayingY').value;
+            const nowPlayingFontSize = document.getElementById('nowPlayingFontSize').value;
+            const nowPlayingColor = document.getElementById('nowPlayingColor').value;
+            
+            const messageX = document.getElementById('messageX').value;
+            const messageY = document.getElementById('messageY').value;
+            const messageFontSize = document.getElementById('messageFontSize').value;
+            const messageColor = document.getElementById('messageColor').value;
+            
+            const scale = document.querySelector('.preview-container').offsetWidth / 1920;
+            
+            nowPlaying.style.left = (nowPlayingX * scale) + 'px';
+            nowPlaying.style.bottom = 'auto';
+            nowPlaying.style.top = (nowPlayingY * scale) + 'px';
+            nowPlaying.style.fontSize = Math.max(12, nowPlayingFontSize * scale) + 'px';
+            nowPlaying.style.color = nowPlayingColor;
+            
+            message.style.left = (messageX * scale) + 'px';
+            message.style.top = (messageY * scale) + 'px';
+            message.style.fontSize = Math.max(10, messageFontSize * scale) + 'px';
+            message.style.color = messageColor;
+        }
+
+        function addMessage() {
+            const list = document.getElementById('messagesList');
+            const item = document.createElement('div');
+            item.className = 'message-item';
+            item.innerHTML = `
+                <input type="text" class="message-input" placeholder="Entrez un message...">
+                <button class="btn btn-danger" onclick="removeMessage(this)">✕</button>
+            `;
+            list.appendChild(item);
+        }
+
+        function removeMessage(btn) {
+            const items = document.querySelectorAll('.message-item');
+            if (items.length > 1) {
+                btn.parentElement.remove();
+            } else {
+                showAlert('Il doit rester au moins un message', 'error');
+            }
+        }
+
+        async function saveMessages() {
+            const inputs = document.querySelectorAll('.message-input');
+            const messages = Array.from(inputs).map(input => input.value).filter(v => v.trim() !== '');
+            
+            if (messages.length === 0) {
+                showAlert('Veuillez entrer au moins un message', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/text/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ messages })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Messages sauvegardes avec succes', 'success');
+                } else {
+                    showAlert(data.error, 'error');
+                }
+            } catch (err) {
+                showAlert('Erreur lors de la sauvegarde', 'error');
+            }
+        }
+
+        async function applyOverlayChanges() {
+            const overlayConfig = {
+                nowPlayingPos: {
+                    x: parseInt(document.getElementById('nowPlayingX').value),
+                    y: parseInt(document.getElementById('nowPlayingY').value),
+                    fontSize: parseInt(document.getElementById('nowPlayingFontSize').value),
+                    color: document.getElementById('nowPlayingColor').value,
+                    font: 'DejaVu Sans'
+                },
+                messagePos: {
+                    x: parseInt(document.getElementById('messageX').value),
+                    y: parseInt(document.getElementById('messageY').value),
+                    fontSize: parseInt(document.getElementById('messageFontSize').value),
+                    color: document.getElementById('messageColor').value,
+                    font: 'DejaVu Sans'
+                }
+            };
+
+            try {
+                const response = await fetch('/api/text/overlay', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(overlayConfig)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('Overlay applique avec succes', 'success');
+                } else {
+                    showAlert(data.error, 'error');
+                }
+            } catch (err) {
+                showAlert('Erreur lors de l\'application', 'error');
+            }
+        }
+
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.classList.add('show');
+            
+            container.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', updatePreview);
+        });
+
+        window.addEventListener('resize', updatePreview);
+
+        async function loadCurrentSettings() {
+            try {
+                const response = await fetch('/api/status');
+                const status = await response.json();
+                
+                if (status.textOverlay) {
+                    const { nowPlayingPos, messagePos } = status.textOverlay;
+                    
+                    if (nowPlayingPos) {
+                        document.getElementById('nowPlayingX').value = nowPlayingPos.x;
+                        document.getElementById('nowPlayingY').value = nowPlayingPos.y;
+                        document.getElementById('nowPlayingFontSize').value = nowPlayingPos.fontSize;
+                        document.getElementById('nowPlayingColor').value = nowPlayingPos.color;
+                    }
+                    
+                    if (messagePos) {
+                        document.getElementById('messageX').value = messagePos.x;
+                        document.getElementById('messageY').value = messagePos.y;
+                        document.getElementById('messageFontSize').value = messagePos.fontSize;
+                        document.getElementById('messageColor').value = messagePos.color;
+                    }
+                }
+                
+                if (status.messages && status.messages.length > 0) {
+                    const list = document.getElementById('messagesList');
+                    list.innerHTML = '';
+                    status.messages.forEach(msg => {
+                        const item = document.createElement('div');
+                        item.className = 'message-item';
+                        item.innerHTML = `
+                            <input type="text" class="message-input" value="${msg}" placeholder="Entrez un message...">
+                            <button class="btn btn-danger" onclick="removeMessage(this)">✕</button>
+                        `;
+                        list.appendChild(item);
+                    });
+                }
+                
+                updatePreview();
+            } catch (err) {
+                console.error('Erreur chargement parametres:', err);
+            }
+        }
+
+        loadCurrentSettings();
+    </script>
+</body>
+</html>
