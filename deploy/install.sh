@@ -65,7 +65,6 @@ else
   read -rp "YouTube (RTMP) stream key: " STREAM_KEY
   read -rp "Local port [8080]: " PORT; PORT="${PORT:-8080}"
   read -rp "Public domain (for nginx, optional) [example.com]: " DOMAIN; DOMAIN="${DOMAIN:-example.com}"
-  read -rp "Streaming engine v2=permanent/gapless, v1=per-track [v2]: " ENGINE; ENGINE="${ENGINE:-v2}"
 
   SESSION_SECRET="$(node -e 'console.log(require("crypto").randomBytes(48).toString("hex"))')"
   PWHASH="$(node -e '
@@ -80,7 +79,6 @@ STREAM_KEY=${STREAM_KEY}
 SESSION_SECRET=${SESSION_SECRET}
 DASHBOARD_PASSWORD_HASH=${PWHASH}
 COOKIE_SECURE=1
-STREAM_ENGINE=${ENGINE}
 DOMAIN=${DOMAIN}
 EOF
   chmod 600 .env

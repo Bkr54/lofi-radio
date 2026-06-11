@@ -1,17 +1,16 @@
 /**
  * streamEngineV2 — PERMANENT (hybrid) streaming engine for Lofi Radio.
  *
- * Drop-in replacement for streamManager.js: SAME public API, SAME events,
- * SAME getStatus() shape. Selectable via STREAM_ENGINE=v2.
+ * The streaming engine. Exposes a clean public API + events consumed by the dashboard.
  *
- * Design (see docs/MOTEUR-PERMANENT-EVALUATION.md):
+ * Design (see docs/ENGINE.md):
  *   - MUSIC mode: A SINGLE ffmpeg encoder runs continuously.
  *       * looped background video (-stream_loop -1)
  *       * gapless audio via a FIFO: node decodes each mp3 to PCM s16le
  *         and chains streams through the pipe -> no gap between tracks.
  *       * "Now Playing" + message overlays via drawtext textfile reload=1
  *         -> the controller writes text files, ffmpeg hot-reloads them.
- *     => track change = 0 RTMP reconnections (vs ~410/day in V1).
+ *     => track change = 0 RTMP reconnections (vs hundreds/day with a per-track restart).
  *   - PROGRAM mode: ONE controlled reconnection (rare) to broadcast a
  *     scheduled video with its own audio, then resume the permanent engine.
  *   - hotSwap playlist: live (the feeder queue is swapped, the encoder is untouched).
@@ -92,7 +91,7 @@ class StreamEngineV2 extends EventEmitter {
     this.restartCount = 0; // unintentional reconnections (crash) — should stay ~0
   }
 
-  // ───────────────────────── Playlist helpers (identical to V1) ─────────────────────────
+  // ───────────────────────── Playlist helpers ─────────────────────────
 
   async getPlaylists() {
     const mp3Dir = path.join(__dirname, '../media/mp3');

@@ -6,19 +6,15 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const { loadConfig, saveConfig } = require('./config');
-// Engine selector (reversible): STREAM_ENGINE=v2 -> permanent engine, otherwise V1 chunk-by-chunk.
-const STREAM_ENGINE = (process.env.STREAM_ENGINE || 'v1').toLowerCase();
-const StreamManager = STREAM_ENGINE === 'v2'
-  ? require('./streamEngineV2')
-  : require('./streamManager');
+const StreamEngine = require('./streamEngineV2');
 const BroadcastScheduler = require('./broadcastScheduler');
 const logger = require('./logger');
 
 const app = express();
 const config = loadConfig();
-const streamManager = new StreamManager(config);
+const streamManager = new StreamEngine(config);
 const scheduler = new BroadcastScheduler(streamManager);
-logger.info(`Active streaming engine: ${STREAM_ENGINE.toUpperCase()} (${STREAM_ENGINE === 'v2' ? 'permanent/gapless' : 'chunk-by-chunk'})`);
+logger.info('Streaming engine: permanent / gapless');
 
 // Verifies a password against a "scrypt$<salt>$<hash>" hash (timing-safe), with no external dependency.
 function verifyPassword(plain, stored) {

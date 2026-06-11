@@ -44,7 +44,7 @@ NOW=$(date '+%Y-%m-%d %H:%M:%S'); TODAY=$(date '+%Y-%m-%d'); HOUR=$(date '+%-H')
 SVC_ACTIVE=$(systemctl is-active "$SVC" 2>/dev/null)
 NRESTARTS=$(systemctl show -p NRestarts --value "$SVC" 2>/dev/null); NRESTARTS=${NRESTARTS:-0}
 
-# ffmpeg of THIS service only (scoped by user), with debounce for the per-track engine.
+# ffmpeg of THIS service only (scoped by user), with debounce for brief track transitions.
 FFMPEG_UP=0
 for i in 1 2 3 4; do
   if pgrep -u "$SVC_USER" -x ffmpeg >/dev/null 2>&1; then FFMPEG_UP=1; break; fi

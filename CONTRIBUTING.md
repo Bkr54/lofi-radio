@@ -9,8 +9,8 @@ welcome — bug reports, docs, features, and engine improvements.
   audio/video must stay out of the repo (`.gitignore` already covers them).
 - Keep the project **dependency-light** and **GPU-free** — it must run on a small VPS.
 - Match the existing code style (plain Node, CommonJS, no framework churn).
-- Both engines (`v1` per-track, `v2` permanent) must keep the **same public API**
-  and events so they stay interchangeable via `STREAM_ENGINE`.
+- The streaming engine must keep its **public API and events** stable — the dashboard,
+  scheduler and `/healthz` all depend on them.
 
 ## Dev setup
 
@@ -57,14 +57,13 @@ for f in deploy/*.sh; do bash -n "$f"; done
 
 ## Reporting bugs
 
-Open an issue with: your OS, Node and ffmpeg versions, the engine in use
-(`v1`/`v2`), relevant `journalctl`/console logs (with secrets redacted), and clear
-reproduction steps.
+Open an issue with: your OS, Node and ffmpeg versions, relevant
+`journalctl`/console logs (with secrets redacted), and clear reproduction steps.
 
 ## Architecture
 
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and
-[`docs/ENGINES.md`](docs/ENGINES.md) to understand the server, the two engines,
+[`docs/ENGINE.md`](docs/ENGINE.md) to understand the server, the streaming engine,
 and the scheduler before diving in.
 
 ## License

@@ -1,7 +1,7 @@
 {
   "name": "lofi-radio",
   "version": "1.0.0",
-  "description": "Self-hosted 24/7 music radio streamer to YouTube (RTMP) with a web dashboard, Now Playing overlay, hot-swap playlists, a TV-grid scheduler and two streaming engines (per-track and gapless permanent).",
+  "description": "Self-hosted 24/7 music radio streamer to YouTube (RTMP) with a web dashboard, Now Playing overlay, hot-swap playlists, a TV-grid scheduler and a gapless permanent streaming engine.",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
